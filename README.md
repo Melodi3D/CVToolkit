@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/customcvkiticon.png" width="250" alt="Velix Logo">
+  <img src="images/customcvkiticon.png" width="250" alt="customcvkit Logo">
 </p>
 
 # Custom CV Kit
