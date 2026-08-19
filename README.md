@@ -1,2 +1,2 @@
-# CustomCVKit
+# Custom CV Kit
 CustomCVKit
