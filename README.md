@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/customcvkitt.png" width="250" alt="customcvkit Logo">
+  <img src="images/CVtoolKit.png" width="250" alt="customcvkit Logo">
 </p>
 
 # CV ToolKit
