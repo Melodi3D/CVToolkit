@@ -12,6 +12,18 @@ import os
 
 # landmark functions
 
+# Functions for joint selection
+def joint_selection():
+    import maya.cmds as cmds
+
+    joints = cmds.ls(type="joint")
+
+    if joints:
+        cmds.select(joints)
+    
+    else:
+        cmds.warning("There are no joints in this scene")
+
 # color presets
 red = (1.0, 0.0, 0.0)
 orange = (1.0, 0.5, 0.0)
@@ -102,8 +114,7 @@ class CVToolkit(QtWidgets.QWidget):
         except (NameError, AttributeError):
 
             self.widgetPath = (
-                r"C:\Users\melme\OneDrive - Rutgers University"
-                r"\Desktop\CVToolkit"
+                r"C:\Users\melme\OneDrive - Rutgers University\Desktop\CVToolkit"
             )
 
         self.iconsPath = os.path.join(
@@ -131,7 +142,7 @@ class CVToolkit(QtWidgets.QWidget):
         self.widget.setParent(self)
 
         # Set initial window size
-        self.resize(600, 850)
+        self.resize(700, 950)
 
         # Locate core UI widgets
         self.btn_close = self.widget.findChild(
@@ -139,12 +150,58 @@ class CVToolkit(QtWidgets.QWidget):
             "btn_close"
         )
 
-        # Map custom curve buttons to PNG files
+        # Maps custom curve buttons to PNG files
         self.button_icon_map = {
             "btn_CVlogo": "CVtoolKitlogo.png",
-            "btn_square": "square.png",
-            "btn_cube": "cube.png",
+            "btn_arc180": "arc180.png",
+            "btn_arc240": "arc240.png",
             "btn_arrow": "arrow.png",
+            "btn_axis": "axis.png",
+            "btn_bone": "bone.png",
+            "btn_bowtie": "bowtie.png",
+            "btn_circle": "circle.png",
+            "btn_circle_crossed_pins": "circle_crossed_pins.png",
+            "btn_circle_top_pin": "circle_top_pin.png",
+            "btn_circle_with_arrow_1": "circle_with_arrow_1.png",
+            "btn_circle_with_arrow_2": "circle_with_arrow_2.png",
+            "btn_circle_with_arrow_3": "circle_with_arrow_3.png",
+            "btn_circlecross": "circlecross.png",
+            "btn_cog": "cog.png",
+            "btn_cross_arrow": "cross_arrow.png",
+            "btn_crown": "crown.png",
+            "btn_cylinder": "cylinder.png",
+            "btn_decagram": "decagram.png",
+            "btn_diamond": "diamond.png",
+            "btn_drop": "drop.png",
+            "btn_eyebrow": "eyebrow.png",
+            "btn_FKiK": "FKiK.png",
+            "btn_flower": "flower.png",
+            "btn_FourPointStar": "FourPointStar.png",
+            "btn_gearstar": "gearstar.png",
+            "btn_halfcircle": "halfcircle.png",
+            "btn_heart": "heart.png",
+            "btn_hexa_cone": "hexa_cone.png",
+            "btn_hexagon": "hexagon.png",
+            "btn_moon_crescent": "moon_crescent.png",
+            "btn_oval_rings": "oval_rings.png",
+            "btn_paw": "paw.png",
+            "btn_pill": "pill.png",
+            "btn_plus": "plus.png",
+            "btn_pyramid": "pyramid.png",
+            "btn_square": "square.png",
+            "btn_square_cross": "square_cross.png",
+            "btn_square_double_pin": "square_double_pin.png",
+            "btn_square_round": "square_round.png",
+            "btn_star": "star.png",
+            "btn_target": "target.png",
+            "btn_thick_arrow": "thick_arrow.png",
+            "btn_thick_cross_arrow": "thick_cross_arrow.png",
+            "btn_thick_double_arrow": "thick_double_arrow.png",
+            "btn_triangle": "triangle.png",
+            "btn_triangle_pin": "triangle_pin.png",
+            "btn_visor": "visor.png",
+            "btn_cube": "cube.png",
+            "btn_crossarrow": "crossarrow.png",
         }
 
         # Loads icons
@@ -155,6 +212,14 @@ class CVToolkit(QtWidgets.QWidget):
             self.btn_close.clicked.connect(
                 self.close
             )
+
+    def resizeEvent(self, event):
+        """Called on automatically generated resize event."""
+
+        self.widget.resize(
+            self.width(),
+            self.height()
+        )
 
     def load_tool_button_icons(self):
         """Load transparent icons onto tool buttons."""
@@ -167,15 +232,6 @@ class CVToolkit(QtWidgets.QWidget):
             )
 
             if tool_btn:
-
-                tool_btn.setStyleSheet(
-                    """
-                    QToolButton {
-                        background-color: transparent;
-                        border: none;
-                    }
-                    """
-                )
 
                 icon_file_path = os.path.join(
                     self.iconsPath,
@@ -216,15 +272,6 @@ class CVToolkit(QtWidgets.QWidget):
                     f"button named '{btn_name}'"
                 )
 
-    def resizeEvent(self, event):
-        """Called on automatically generated resize event."""
-
-        self.widget.resize(
-            self.width(),
-            self.height()
-        )
-
-
 def openWindow():
     """Attach CV Toolkit to Maya's main window."""
 
@@ -252,7 +299,7 @@ def openWindow():
     )
 
     CVToolkit.window.setWindowTitle(
-        "CV Toolkit"
+        "CV Toolkit v1"
     )
 
     CVToolkit.window.show()
