@@ -1,4 +1,7 @@
 """ CV Toolkit by Melodi """
+# ----------------------------
+# Joint Functions
+# ----------------------------
 import maya.cmds as cmds
 import maya.mel as mel
 from maya import OpenMayaUI as omui
@@ -16,8 +19,8 @@ import os
 # functions for joint selection
 def joint_selection():
     '''
-    Selects all joints in the current maya scene
-    '''
+        Selects all joints in the current maya scene
+        '''
     import maya.cmds as cmds
 
     joints = cmds.ls(type="joint")
@@ -30,16 +33,194 @@ def joint_selection():
 
 
 def mirror_joints():
-    pass
+    '''
+    Mirrors joints in the current maya scene
+    '''
+
+    joint_selection = cmds.ls(selection=True)
+
+    if joint_selection:
+        cmds.mirrorJoint(
+            joint_selection[0],
+            mirrorYZ=True,
+            mirrorBehavior=True
+        )
+
+    else:
+        raise RuntimeError("Select joints to mirror")
 
 def orient_joints():
-    pass
+    def orient_joints_X():
+        joint_selection = cmds.ls(selection=True)
+
+        if joint_selection:
+            for joint in joint_selection:
+                current_value = cmds.getAttr(joint + ".jointOrientX")
+
+                cmds.setAttr(
+                    joint + ".jointOrientX",
+                    current_value + 90
+                )
+
+        else:
+            raise RuntimeError("Select joints to orient on X")
+
+    orient_joints_X()
+
+def lock_selection_translate_joints():
+    joints_selection = cmds.ls(type="joint")
+
+    if joints_selection:
+        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
+
+        cmds.select(joints)
+
+        for joint in joints:
+            cmds.setAttr(joint + ".translateX", lock=True)
+            cmds.setAttr(joint + ".translateY", lock=True)
+            cmds.setAttr(joint + ".translateZ", lock=True)
+    else:
+        raise RuntimeError("Select joints to lock translate")
+
+def lock_selection_scale_joints():
+    joints_selection = cmds.ls(type="joint")
+
+    if joints_selection:
+        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
+
+        cmds.select(joints)
+
+        for joint in joints:
+            cmds.setAttr(joint + ".rotateX", lock=True)
+            cmds.setAttr(joint + ".rotateY", lock=True)
+            cmds.setAttr(joint + ".rotateZ", lock=True)
+    else:
+        raise RuntimeError("Select joints to lock scale")
+
+def lock_selection_scale_joints():
+    joints_selection = cmds.ls(type="joint")
+
+    if joints_selection:
+        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
+
+        cmds.select(joints)
+
+        for joint in joints:
+            cmds.setAttr(joint + ".scaleX", lock=True)
+            cmds.setAttr(joint + ".scaleY", lock=True)
+            cmds.setAttr(joint + ".scaleZ", lock=True)
+    else:
+        raise RuntimeError("Select joints to lock scale")
+
+def lock_selection_visibility_joints():
+    joints_selection = cmds.ls(type="joint")
+
+    if joints_selection:
+        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
+
+        cmds.select(joints)
+
+        for joint in joints:
+            cmds.setAttr(joint + ".visibility", lock=True)
+    else:
+        raise RuntimeError("Select joints to lock visibility")
+
 
 # ----------------------------
 # Control Curves Functions
 # ----------------------------
 
+def curve_selection():
+    curves_selection = cmds.ls(type="nurbsCurve")
 
+    if curves_selection:
+        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+
+        cmds.select(curves)
+
+    else:
+        cmds.warning("There are no curves in this scene")
+
+
+from maya import cmds
+def mirror_curves():
+    '''
+    Mirrors curves in the current maya scene
+    '''
+    curve_selection = cmds.ls(selection=True)
+
+    if curve_selection:
+        duplicated_curve = cmds.duplicate(curve_selection)
+
+        temporary_group = cmds.group(duplicated_curve[0], world=True)
+
+        cmds.setAttr(temporary_group + ".scaleX", -1)
+
+        mirrored_curves = cmds.ungroup(temporary_group)
+
+        cmds.makeIdentity(mirrored_curves, apply=True, scale=True)
+
+    else:
+        raise RuntimeError("Select curves to mirror")
+
+mirror_curves()
+def lock_selection_translate_curves():
+    curves_selection = cmds.ls(type="nurbsCurve")
+
+    if curves_selection:
+        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+
+        cmds.select(curves)
+
+        for curve in curves:
+            cmds.setAttr(curve + ".translateX", lock=True)
+            cmds.setAttr(curve + ".translateY", lock=True)
+            cmds.setAttr(curve + ".translateZ", lock=True)
+    else:
+        raise RuntimeError("Select curves to lock translate")
+
+def lock_selection_rotate_curves():
+    curves_selection = cmds.ls(type="nurbsCurve")
+
+    if curves_selection:
+        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+
+        cmds.select(curves)
+
+        for curve in curves:
+            cmds.setAttr(curve + ".rotateX", lock=True)
+            cmds.setAttr(curve + ".rotateY", lock=True)
+            cmds.setAttr(curve + ".rotateZ", lock=True)
+    else:
+        raise RuntimeError("Select curves to lock rotate")
+
+def lock_selection_scale_curves():
+    curves_selection = cmds.ls(type="nurbsCurve")
+
+    if curves_selection:
+        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+
+        cmds.select(curves)
+
+        for curve in curves:
+            cmds.setAttr(curve + ".scaleX", lock=True)
+            cmds.setAttr(curve + ".scaleY", lock=True)
+            cmds.setAttr(curve + ".scaleZ", lock=True)
+    else:
+        raise RuntimeError("Select curves to lock scale")
+
+def lock_selection_visibility_curves():
+    curves_selection = cmds.ls(type="nurbsCurve")
+
+    if curves_selection:
+        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+
+        cmds.select(curves)
+
+        for curve in curves:
+            cmds.setAttr(curve + ".visibility", lock=True)
+    else:
+        raise RuntimeError("Select curves to lock visibility")
 
 # ----------------------------
 # Landmark Functions
@@ -59,20 +240,19 @@ pink = (1.0, 0.4, 0.7)
 # function for confirming faces are selected
 def faces_confirm():
     '''
-    Confirms if faces are selected
-    '''
+        Confirms if faces are selected
+        '''
     cmds.confirmDialog(
         title="CV Toolkit",
         message="Please select at least one polygon face.",
         button=["OK"]
     )
 
-
 # function for creating landmarks
 def create_landmark(colors):
     '''
-    Creates colored landmarks
-    '''
+        Creates colored landmarks
+        '''
     # user selects faces
     selection = cmds.ls(sl=True, flatten=True)
 
@@ -115,6 +295,9 @@ def create_landmark(colors):
         colors[2],
         type="double3"
     )
+# ----------------------------
+# Presets
+# ----------------------------
 
 
 # ----------------------------
