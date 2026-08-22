@@ -12,7 +12,7 @@ import os
 
 # landmark functions
 
-# Functions for joint selection
+# function for joint selection
 def joint_selection():
     import maya.cmds as cmds
 
