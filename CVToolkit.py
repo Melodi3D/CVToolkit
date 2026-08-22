@@ -8,11 +8,16 @@ from functools import partial
 import sys
 import os
 
+
 # ----------------------------
 # Joint Functions
 # ----------------------------
-# Functions for joint selection
+
+# functions for joint selection
 def joint_selection():
+    '''
+    Selects all joints in the current maya scene
+    '''
     import maya.cmds as cmds
 
     joints = cmds.ls(type="joint")
@@ -21,10 +26,12 @@ def joint_selection():
         cmds.select(joints)
 
     else:
-        cmds.warning("There are no joints in this scene")
+        raise RuntimeError("There are no joints in this scene")
+
 
 def mirror_joints():
     pass
+
 
 # ----------------------------
 # Control Curves Functions
@@ -47,15 +54,21 @@ pink = (1.0, 0.4, 0.7)
 
 # function for confirming faces are selected
 def faces_confirm():
+    '''
+    Confirms if faces are selected
+    '''
     cmds.confirmDialog(
         title="CV Toolkit",
         message="Please select at least one polygon face.",
         button=["OK"]
     )
 
+
 # function for creating landmarks
 def create_landmark(colors):
-
+    '''
+    Creates landmarks 
+    '''
     # user selects faces
     selection = cmds.ls(sl=True, flatten=True)
 
@@ -98,6 +111,7 @@ def create_landmark(colors):
         colors[2],
         type="double3"
     )
+
 
 # ----------------------------
 # UI Development
@@ -283,6 +297,7 @@ class CVToolkit(QtWidgets.QWidget):
                     f"// Warning: Could not find UI tool "
                     f"button named '{btn_name}'"
                 )
+
 
 def openWindow():
     """Attach CV Toolkit to Maya's main window."""
