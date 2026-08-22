@@ -24,9 +24,20 @@ The goal of this project was to be able to create a full toolkit for riggers, to
 
 •  Customizable CV colors
 
+# Features:
+
 •  Joint and curve selection utilities
 
 •  Curve resizing
 
 •  Create joints and curves at the center of a selection
+
+# Documentation
+Documentation will include
+
+• Installation Guide
+
+• How to Use
+
+• Planned Updates
 
