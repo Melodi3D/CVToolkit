@@ -1,5 +1,4 @@
 """ CV Toolkit by Melodi """
-
 import maya.cmds as cmds
 import maya.mel as mel
 from maya import OpenMayaUI as omui
