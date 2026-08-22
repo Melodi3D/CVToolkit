@@ -9,7 +9,7 @@ CV ToolKit is a Maya tool designed to expedite the creation of custom CV-based c
 Autodesk Maya 2025 • Python • PySide6 • Qt Designer • Adobe Photoshop
 
 # About
-The goal of this project was to be able to create a full toolkit for riggers, to provide quick access custom artist-friendly CVs, as well as create modeling landmarks that can be stored as reusable presets.
+The goal of this project is to create a comprehensive toolkit for riggers, providing quick access to customizable, artist-friendly CV controls and modeling landmarks that can be saved as reusable presets.
 
 # Features:
 •  Landmark Creation with reusable user presets.
