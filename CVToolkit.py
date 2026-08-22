@@ -9,10 +9,10 @@ from functools import partial
 import sys
 import os
 
-
-# landmark functions
-
-# function for joint selection
+# ----------------------------
+# Joint Functions
+# ----------------------------
+# Functions for joint selection
 def joint_selection():
     import maya.cmds as cmds
 
@@ -20,9 +20,20 @@ def joint_selection():
 
     if joints:
         cmds.select(joints)
-    
+
     else:
         cmds.warning("There are no joints in this scene")
+
+def mirror_joints():
+    pass
+
+# ----------------------------
+# Control Curves Functions
+# ----------------------------
+
+# ----------------------------
+# Landmark Functions
+# ----------------------------
 
 # color presets
 red = (1.0, 0.0, 0.0)
@@ -89,7 +100,9 @@ def create_landmark(colors):
         type="double3"
     )
 
+# ----------------------------
 # UI Development
+# ----------------------------
 class CVToolkit(QtWidgets.QWidget):
     """Creates CV Toolkit window."""
 
