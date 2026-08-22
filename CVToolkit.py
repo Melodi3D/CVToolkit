@@ -32,10 +32,14 @@ def joint_selection():
 def mirror_joints():
     pass
 
+def orient_joints():
+    pass
 
 # ----------------------------
 # Control Curves Functions
 # ----------------------------
+
+
 
 # ----------------------------
 # Landmark Functions
@@ -67,7 +71,7 @@ def faces_confirm():
 # function for creating landmarks
 def create_landmark(colors):
     '''
-    Creates landmarks 
+    Creates colored landmarks
     '''
     # user selects faces
     selection = cmds.ls(sl=True, flatten=True)
