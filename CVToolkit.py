@@ -31,7 +31,6 @@ def faces_confirm():
         button=["OK"]
     )
 
-
 # function for creating landmarks
 def create_landmark(colors):
 
@@ -78,7 +77,7 @@ def create_landmark(colors):
         type="double3"
     )
 
-
+# UI Development
 class CVToolkit(QtWidgets.QWidget):
     """Creates CV Toolkit window."""
 
@@ -148,7 +147,7 @@ class CVToolkit(QtWidgets.QWidget):
             "btn_arrow": "arrow.png",
         }
 
-        # Load icons
+        # Loads icons
         self.load_tool_button_icons()
 
         # Assign functionality to buttons
