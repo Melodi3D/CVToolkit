@@ -13,11 +13,20 @@ The goal of this project was to be able to create a full toolkit for riggers, to
 
 # Features:
 •  Landmark Creation with reusable user presets.
+
 •  Object-Specific landmark presets
+
 •  Custom CV control library
+
 •  Curve Manipulation 
+
 •  RGB Presets and Custom RGB sliders
+
 •  Customizable CV colors
+
 •  Joint and curve selection utilities
+
 •  Curve resizing
+
 •  Create joints and curves at the center of a selection
+
