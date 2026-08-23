@@ -19,8 +19,8 @@ import os
 # functions for joint selection
 def joint_selection():
     '''
-        Selects all joints in the current maya scene
-        '''
+    Selects joints if available
+    '''
     import maya.cmds as cmds
 
     joints = cmds.ls(type="joint")
@@ -32,6 +32,9 @@ def joint_selection():
         raise RuntimeError("There are no joints in this scene")
 
 def create_center_joints():
+    '''
+    Creates joints at the center of object
+    '''
     selection = cmds.ls(selection=True)
 
     new_joint = cmds.joint()
@@ -56,12 +59,14 @@ def mirror_joints():
     else:
         raise RuntimeError("Select joints to mirror")
 
-def orient_joints():
-    def orient_joints_X():
-        joint_selection = cmds.ls(selection=True)
+def orient_joints_X():
+    '''
+    Orients joints on the X axis
+    '''
+    joint_selection = cmds.ls(selection=True)
 
-        if joint_selection:
-            for joint in joint_selection:
+    if joint_selection:
+        for joint in joint_selection:
                 current_value = cmds.getAttr(joint + ".jointOrientX")
 
                 cmds.setAttr(
@@ -72,9 +77,47 @@ def orient_joints():
         else:
             raise RuntimeError("Select joints to orient on X")
 
-    orient_joints_X()
+
+def orient_joints_Y():
+    '''
+    Orients joints on the Y axis
+    '''
+    joint_selection = cmds.ls(selection=True)
+
+    if joint_selection:
+        for joint in joint_selection:
+            current_value = cmds.getAttr(joint + ".jointOrientY")
+
+            cmds.setAttr(
+                joint + ".jointOrientY",
+                current_value + 90
+            )
+
+        else:
+            raise RuntimeError("Select joints to orient on Y")
+
+def orient_joints_Z():
+    '''
+    Orients joints on the Z axis
+    '''
+    joint_selection = cmds.ls(selection=True)
+
+    if joint_selection:
+        for joint in joint_selection:
+            current_value = cmds.getAttr(joint + ".jointOrientZ")
+
+            cmds.setAttr(
+                joint + ".jointOrientZ",
+                current_value + 90
+            )
+
+        else:
+            raise RuntimeError("Select joints to orient on Z")
 
 def lock_selection_translate_joints():
+    '''
+    Locks the translate of selected joints
+    '''
     joints_selection = cmds.ls(type="joint")
 
     if joints_selection:
@@ -90,6 +133,9 @@ def lock_selection_translate_joints():
         raise RuntimeError("Select joints to lock translate")
 
 def lock_selection_scale_joints():
+    '''
+    Locks the rotate of selected joints
+    '''
     joints_selection = cmds.ls(type="joint")
 
     if joints_selection:
@@ -105,6 +151,9 @@ def lock_selection_scale_joints():
         raise RuntimeError("Select joints to lock scale")
 
 def lock_selection_scale_joints():
+    '''
+    Locks the scale of selected joints
+    '''
     joints_selection = cmds.ls(type="joint")
 
     if joints_selection:
@@ -120,6 +169,9 @@ def lock_selection_scale_joints():
         raise RuntimeError("Select joints to lock scale")
 
 def lock_selection_visibility_joints():
+    '''
+    Locks the visibility of selected joints
+    '''
     joints_selection = cmds.ls(type="joint")
 
     if joints_selection:
@@ -138,6 +190,9 @@ def lock_selection_visibility_joints():
 # ----------------------------
 
 def curve_selection():
+    '''
+    Selects curves, makes sure curves are selected
+    '''
     curves_selection = cmds.ls(type="nurbsCurve")
 
     if curves_selection:
@@ -245,8 +300,8 @@ pink = (1.0, 0.4, 0.7)
 # function for confirming faces are selected
 def faces_confirm():
     '''
-        Confirms if faces are selected
-        '''
+    Confirms if faces are selected
+    '''
     cmds.confirmDialog(
         title="CV Toolkit",
         message="Please select at least one polygon face.",
@@ -256,8 +311,8 @@ def faces_confirm():
 # function for creating landmarks
 def create_landmark(colors):
     '''
-        Creates colored landmarks
-        '''
+    Creates colored landmarks
+    '''
     # user selects faces
     selection = cmds.ls(sl=True, flatten=True)
 
