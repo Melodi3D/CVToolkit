@@ -31,6 +31,13 @@ def joint_selection():
     else:
         raise RuntimeError("There are no joints in this scene")
 
+def create_center_joints():
+    selection = cmds.ls(selection=True)
+
+    new_joint = cmds.joint()
+
+    cmds.parent(new_joint, world=True)
+
 
 def mirror_joints():
     '''
@@ -142,7 +149,6 @@ def curve_selection():
         cmds.warning("There are no curves in this scene")
 
 
-from maya import cmds
 def mirror_curves():
     '''
     Mirrors curves in the current maya scene
@@ -163,7 +169,6 @@ def mirror_curves():
     else:
         raise RuntimeError("Select curves to mirror")
 
-mirror_curves()
 def lock_selection_translate_curves():
     curves_selection = cmds.ls(type="nurbsCurve")
 
@@ -222,7 +227,7 @@ def lock_selection_visibility_curves():
     else:
         raise RuntimeError("Select curves to lock visibility")
 
-# ----------------------------
+#
 # Landmark Functions
 # ----------------------------
 
@@ -295,6 +300,21 @@ def create_landmark(colors):
         colors[2],
         type="double3"
     )
+
+# ----------------------------
+# Misc Functions
+# ----------------------------
+def snap_tool():
+    '''
+    Snaps objects to each other
+    '''
+    object_selection = cmds.ls(selection=True)
+
+    if len(object_selection) < 2:
+        raise RuntimeError("Select two objects to snap")
+
+    cmds.matchTransform(object_selection[0], object_selection[1])
+# ----------------------------
 # ----------------------------
 # Presets
 # ----------------------------
