@@ -227,7 +227,7 @@ def lock_selection_visibility_curves():
     else:
         raise RuntimeError("Select curves to lock visibility")
 
-#
+# ----------------------------
 # Landmark Functions
 # ----------------------------
 
