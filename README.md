@@ -27,7 +27,7 @@ The goal of this project is to create a comprehensive toolkit for riggers, provi
 •  Joint and curve selection utilities
 
 # Documentation
-Documentation will include
+Documentatio includes
 
 • Installation Guide
 
