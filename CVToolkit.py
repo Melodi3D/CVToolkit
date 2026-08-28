@@ -1,4 +1,5 @@
-""" CV Toolkit by Melodi 2026 """
+""" CV Toolkit by Melodi  """
+""" Copyright 2026 """
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.api.OpenMaya as om
