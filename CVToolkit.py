@@ -132,7 +132,7 @@ def lock_selection_translate_joints():
     else:
         raise RuntimeError("Select joints to lock translate")
 
-def lock_selection_scale_joints():
+def lock_selection_rotate_joints():
     '''
     Locks the rotate of selected joints
     '''
@@ -188,6 +188,401 @@ def lock_selection_visibility_joints():
 # ----------------------------
 # Control Curves Functions
 # ----------------------------
+# cv presets for data extraction and curve reconstruction
+cv_presets = {
+    "preset_1": {},
+    "preset_2": {
+        "degree_data": 3,
+        "cv_data": [
+            [0.9071069692308772, -3.500040399211375e-17, 0.03247718293832558],
+            [0.9417003841069793, -9.253679210110099e-33, -0.2933462251216245],
+            [0.7122571376994776, 4.798237340988473e-17, -0.7836116248912246],
+            [6.785732323110912e-17, 6.785732323110912e-17, -1.1081941875543877],
+            [-0.7836116248912245, 4.798237340988472e-17, -0.7836116248912244],
+            [-1.1081941875543881, 3.517735619006027e-33, -5.74489823752483e-17],
+            [-0.7836116248912245, -4.7982373409884725e-17, 0.7836116248912245],
+            [-0.10865429778605067, -6.660964775652119e-17, 1.0204277517293527],
+            [0.24563708169559312, -5.68677343467475e-17, 0.9049357520267468]
+        ],
+        "form_data": 0,
+        "knot_data": [
+            8.0, 8.0, 8.0,
+            9.0, 10.0, 11.0,
+            12.0, 13.0,
+            14.0, 14.0, 14.0
+        ]
+    },
+    "preset_3": {},
+    "preset_4": {},
+    "preset_5": {},
+    "preset_6": {},
+    "preset_7": {
+        "degree_data": 3,
+        "cv_data": [
+            [0.7836116248912245, 4.798237340988473e-17, -0.7836116248912246],
+            [6.785732323110912e-17, 6.785732323110912e-17, -1.1081941875543877],
+            [-0.7836116248912245, 4.798237340988472e-17, -0.7836116248912244],
+            [-1.1081941875543881, 3.517735619006027e-33, -5.74489823752483e-17],
+            [-0.7836116248912245, -4.7982373409884725e-17, 0.7836116248912245],
+            [-1.1100856969603225e-16, -6.785732323110917e-17, 1.1081941875543884],
+            [0.7836116248912245, -4.798237340988472e-17, 0.7836116248912244],
+            [1.1081941875543881, -9.253679210110099e-33, 1.511240500779959e-16]
+        ],
+        "form_data": 2,
+        "knot_data": [-2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    },
+    "preset_8": {},
+    "preset_9": {},
+    "preset_10": {},
+    "preset_11": {},
+    "preset_12": {},
+    "preset_13": {},
+    "preset_14": {},
+    "preset_15": {},
+    "preset_16": {},
+    "preset_17": {},
+    "preset_18": {},
+    "preset_19": {},
+    "preset_20": {},
+    "preset_21": {},
+    "preset_22": {},
+    "preset_23": [
+        {
+            "degree_data": 1,
+            "cv_data": [
+                [-0.6877673961630678, 0.6918693855892112, 0.0],
+                [-1.2163493331736928, 0.6918693855892112, 0.0],
+                [-1.2163493331736928, 0.0, 0.0],
+                [-1.0016129139007903, 0.0, 0.0],
+                [-1.0016129139007903, 0.2826939123058683, 0.0],
+                [-0.7335427740424286, 0.2826939123058683, 0.0],
+                [-0.7335427740424286, 0.4223880819107849, 0.0],
+                [-1.0016129139007903, 0.4223880819107849, 0.0],
+                [-1.0016129139007903, 0.5432057500779164, 0.0],
+                [-0.6877673961630678, 0.5432057500779164, 0.0]
+            ],
+            "form_data": 2,
+            "knot_data": [
+                0.0, 1.0, 2.0, 3.0, 4.0,
+                5.0, 6.0, 7.0, 8.0, 9.0,
+                10.0
+            ]
+        },
+
+        {
+            "degree_data": 1,
+            "cv_data": [
+                [0.7689378968119427, 0.6918693855892112, 0.0],
+                [0.5551390065442845, 0.6918693855892112, 0.0],
+                [0.5551390065442845, 0.0, 0.0],
+                [0.7689378968119427, 0.0, 0.0],
+                [0.7689378968119427, 0.16882572064243154, 0.0],
+                [0.8793942052785444, 0.28453034902496066, 0.0],
+                [1.0252647268989445, 0.0, 0.0],
+                [1.288540724779276, 0.0, 0.0],
+                [1.0247427139204173, 0.43071968721236314, 0.0],
+                [1.27721293915859, 0.6918693855892112, 0.0],
+                [0.9928757453343491, 0.6918693855892112, 0.0],
+                [0.7689378968119427, 0.43041039192291963, 0.0]
+            ],
+            "form_data": 2,
+            "knot_data": [
+                0.0, 1.0, 2.0, 3.0, 4.0,
+                5.0, 6.0, 7.0, 8.0, 9.0,
+                10.0, 11.0, 12.0
+            ]
+        },
+
+        {
+            "degree_data": 1,
+            "cv_data": [
+                [0.4187904123994821, 0.6918693855892112, 0.0],
+                [0.22670965373147878, 0.6918693855892112, 0.0],
+                [0.22670965373147878, 0.561135095621458, 0.0],
+                [0.4187904123994821, 0.561135095621458, 0.0]
+            ],
+            "form_data": 2,
+            "knot_data": [
+                0.0, 1.0, 2.0, 3.0, 4.0
+            ]
+        },
+
+        {
+            "degree_data": 1,
+            "cv_data": [
+                [0.4187904123994821, 0.501199855732928, 0.0],
+                [0.22670965373147878, 0.501199855732928, 0.0],
+                [0.22670965373147878, 0.0, 0.0],
+                [0.4187904123994821, 0.0, 0.0]
+            ],
+            "form_data": 2,
+            "knot_data": [
+                0.0, 1.0, 2.0, 3.0, 4.0
+            ]
+        },
+
+        {
+            "degree_data": 1,
+            "cv_data": [
+                [-0.357988426628139, 0.6918693855892112, 0.0],
+                [-0.5717873168957974, 0.6918693855892112, 0.0],
+                [-0.5717873168957974, 0.0, 0.0],
+                [-0.357988426628139, 0.0, 0.0],
+                [-0.357988426628139, 0.16882572064243154, 0.0],
+                [-0.2475321181615373, 0.28453034902496066, 0.0],
+                [-0.10166172652444883, 0.0, 0.0],
+                [0.16161440133919425, 0.0, 0.0],
+                [-0.10218373950297588, 0.43071968721236314, 0.0],
+                [0.15028648573519665, 0.6918693855892112, 0.0],
+                [-0.13405057810573284, 0.6918693855892112, 0.0],
+                [-0.357988426628139, 0.43041039192291963, 0.0]
+            ],
+            "form_data": 2,
+            "knot_data": [
+                0.0, 1.0, 2.0, 3.0, 4.0,
+                5.0, 6.0, 7.0, 8.0, 9.0,
+                10.0, 11.0, 12.0
+            ]
+        }
+    ],
+    "preset_24": {},
+    "preset_25": {},
+    "preset_26": {},
+    "preset_27": {},
+    "preset_28": {},
+}
+
+def curve_data_extraction():
+
+    # -------------------------
+    # Select curve
+    # -------------------------
+
+    selected_objects = cmds.ls(selection=True)
+
+    if not selected_objects:
+        cmds.error("Please select a NURBS curve.")
+
+    selected_curve = selected_objects[0]
+
+
+    # -------------------------
+    # Get all curve shapes
+    # -------------------------
+
+    curve_shapes = cmds.listRelatives(
+        selected_curve,
+        shapes=True,
+        type="nurbsCurve"
+    )
+
+    if not curve_shapes:
+        cmds.error(
+            "Selected object does not contain a NURBS curve shape."
+        )
+
+
+    # -------------------------
+    # Stores all shape data
+    # -------------------------
+
+    curve_preset = []
+
+
+    # -------------------------
+    # Extract every curve shape
+    # -------------------------
+
+    for shape in curve_shapes:
+
+        # Degree
+        curve_degree = cmds.getAttr(
+            shape + ".degree"
+        )
+
+        # Form
+        curve_form = cmds.getAttr(
+            shape + ".form"
+        )
+
+
+        # -------------------------
+        # CV positions
+        # -------------------------
+
+        curve_points = []
+
+        curve_cvs = cmds.ls(
+            shape + ".cv[*]",
+            flatten=True
+        )
+
+        for cv in curve_cvs:
+
+            cv_position = cmds.xform(
+                cv,
+                query=True,
+                translation=True,
+                objectSpace=True
+            )
+
+            curve_points.append(
+                cv_position
+            )
+
+
+        # -------------------------
+        # Knot vector
+        # -------------------------
+
+        curve_info = cmds.createNode(
+            "curveInfo"
+        )
+
+        cmds.connectAttr(
+            shape + ".worldSpace[0]",
+            curve_info + ".inputCurve",
+            force=True
+        )
+
+        curve_knots = cmds.getAttr(
+            curve_info + ".knots[*]"
+        )
+
+        cmds.delete(
+            curve_info
+        )
+
+        curve_knots = list(
+            curve_knots
+        )
+
+
+        # -------------------------
+        # Store shape
+        # -------------------------
+
+        shape_data = {
+            "degree_data": curve_degree,
+            "cv_data": curve_points,
+            "form_data": curve_form,
+            "knot_data": curve_knots
+        }
+
+        curve_preset.append(
+            shape_data
+        )
+
+
+    # -------------------------
+    # Return all shapes
+    # -------------------------
+
+    return curve_preset
+
+
+def curve_data_reconstruction(preset):
+
+    # -------------------------
+    # Store rebuilt curves
+    # -------------------------
+
+    rebuilt_curves = []
+
+
+    # -------------------------
+    # Rebuild every shape
+    # -------------------------
+
+    for shape_data in preset:
+
+        degree = shape_data["degree_data"]
+        points = shape_data["cv_data"]
+        preset_form = shape_data["form_data"]
+        knots = shape_data["knot_data"]
+
+
+        # -------------------------
+        # Periodic curve
+        # -------------------------
+
+        if preset_form == 2:
+
+            periodic_points = (
+                points + points[:degree]
+            )
+
+            required_knot_count = (
+                len(periodic_points)
+                + degree
+                - 1
+            )
+
+            periodic_knots = list(
+                range(required_knot_count)
+            )
+
+            rebuilt_curve = cmds.curve(
+                point=periodic_points,
+                degree=degree,
+                knot=periodic_knots,
+                periodic=True
+            )
+
+
+        # -------------------------
+        # Open / closed curve
+        # -------------------------
+
+        else:
+
+            rebuilt_curve = cmds.curve(
+                point=points,
+                degree=degree,
+                knot=knots
+            )
+
+
+        rebuilt_curves.append(
+            rebuilt_curve
+        )
+
+
+    # -------------------------
+    # Combine all curve shapes
+    # under one transform
+    # -------------------------
+
+    main_curve = rebuilt_curves[0]
+
+    for extra_curve in rebuilt_curves[1:]:
+
+        extra_shapes = cmds.listRelatives(
+            extra_curve,
+            shapes=True,
+            fullPath=True
+        )
+
+        for shape in extra_shapes:
+
+            cmds.parent(
+                shape,
+                main_curve,
+                shape=True,
+                relative=True
+            )
+
+        cmds.delete(
+            extra_curve
+        )
+
+
+    print(
+        "Rebuilt multi-shape curve:",
+        main_curve
+    )
+
+    return main_curve
 
 def curve_selection():
     '''
@@ -295,6 +690,18 @@ blue = (0.0, 0.0, 1.0)
 magenta = (1.0, 0.0, 1.0)
 cyan = (0.0, 1.0, 1.0)
 pink = (1.0, 0.4, 0.7)
+
+# landmark presets
+landmark_presets = {
+    "preset_1": {},
+    "preset_2": {},
+    "preset_3": {},
+    "preset_4": {},
+    "preset_5": {},
+    "preset_6": {},
+    "preset_7": {},
+    "preset_8": {},
+}
 
 
 # function for confirming faces are selected
@@ -438,6 +845,22 @@ class CVToolkit(QtWidgets.QWidget):
             "btn_close"
         )
 
+        self.btn_circle = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_circle"
+        )
+
+        # Assign functionality to buttons
+        if self.btn_close:
+            self.btn_close.clicked.connect(
+                self.close
+            )
+
+        if self.btn_circle:
+            self.btn_circle.clicked.connect(
+                load_preset_7
+            )
+
         # Maps custom curve buttons to PNG files
         self.button_icon_map = {
             "btn_CVlogo": "CVtoolKitlogo.png",
@@ -494,12 +917,6 @@ class CVToolkit(QtWidgets.QWidget):
 
         # Loads icons
         self.load_tool_button_icons()
-
-        # Assign functionality to buttons
-        if self.btn_close:
-            self.btn_close.clicked.connect(
-                self.close
-            )
 
     def resizeEvent(self, event):
         """Called on automatically generated resize event."""
@@ -560,6 +977,10 @@ class CVToolkit(QtWidgets.QWidget):
                     f"button named '{btn_name}'"
                 )
 
+def load_preset_7():
+    curve_data_reconstruction(
+        cv_presets["preset_7"]
+    )
 
 def openWindow():
     """Attach CV Toolkit to Maya's main window."""
