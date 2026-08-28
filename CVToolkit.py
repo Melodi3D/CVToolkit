@@ -1,4 +1,4 @@
-""" CV Toolkit by Melodi """
+""" CV Toolkit by Melodi Clark 2026 """
 # ----------------------------
 # Joint Functions
 # ----------------------------
