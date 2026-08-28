@@ -26,7 +26,7 @@ The goal of this project is to create a comprehensive toolkit for riggers, provi
 
 •  Joint and curve selection utilities
 
-•  Multi Curve Shape Data Extraction
+•  Multi Curve Shape data extraction and reconstruction
 
 # Documentation
 Documentation includes
