@@ -1,4 +1,4 @@
-""" CV Toolkit by Melodi  """
+""" CV Toolkit by Melodi """
 """ Copyright 2026 """
 import maya.cmds as cmds
 import maya.mel as mel
@@ -3196,48 +3196,30 @@ def lock_selection_visibility_curves():
 # Landmark Functions
 # ----------------------------
 
-# color presets
-red = (1.0, 0.0, 0.0)
-orange = (1.0, 0.5, 0.0)
-yellow = (1.0, 1.0, 0.0)
-green = (0.0, 1.0, 0.0)
-blue = (0.0, 0.0, 1.0)
-magenta = (1.0, 0.0, 1.0)
-cyan = (0.0, 1.0, 1.0)
-pink = (1.0, 0.4, 0.7)
-
-# ----------------------------
-# Landmark Color Presets
-# ----------------------------
-
+# landmark color presets
 landmark_colors = {
-    "Red": (1.0, 0.0, 0.0),
-    "Orange": (1.0, 145 / 255.0, 10 / 255.0),
-    "Yellow": (1.0, 235 / 255.0, 12 / 255.0),
-    "Lime": (170 / 255.0, 235 / 255.0, 0.0),
-    "Green": (0.0, 170 / 255.0, 0.0),
-
-    "Cyan": (0.0, 1.0, 1.0),
-    "Teal": (0.0, 187 / 255.0, 187 / 255.0),
-    "Light_Blue": (78 / 255.0, 184 / 255.0, 1.0),
-    "Blue": (0.0, 85 / 255.0, 1.0),
-    "Indigo": (140 / 255.0, 82 / 255.0, 1.0),
-
-    "Purple": (110 / 255.0, 14 / 255.0, 1.0),
-    "Magenta": (1.0, 17 / 255.0, 1.0),
-    "Pink": (1.0, 148 / 255.0, 250 / 255.0),
-    "Hot_Pink": (1.0, 24 / 255.0, 143 / 255.0),
-
-    "White": (1.0, 1.0, 1.0),
-    "Light_Gray": (200 / 255.0, 200 / 255.0, 200 / 255.0),
-    "Gray": (121 / 255.0, 121 / 255.0, 121 / 255.0),
-    "DarkGray": (65 / 255.0, 65 / 255.0, 65 / 255.0),
-    "Black": (0.0, 0.0, 0.0),
-
-    "Brown": (127 / 255.0, 82 / 255.0, 3 / 255.0),
-    "Tan": (1.0, 221 / 255.0, 179 / 255.0),
+    red : (1.0, 0.0, 0.0),
+    orange : (1.0, 0.5, 0.0),
+    yellow : (1.0, 1.0, 0.0),
+    lime: (170, 255.0, 235, 2550, 0.0),
+    green: (0.0, 1.0, 0.0),
+    cyan : (0.0, 1.0, 1.0),
+    teal : (0.0, 187, 2.550, 17, 255.0),
+    light_blue : (78, 255.0, 1.84, 255, 1.0),
+    blue : (0.0, 0.0, 1.0),
+    indigo : (140, 255.0, 82, 255.0, 1.0),
+    purple : (110, 255.0, 14, 255.0, 1.0),
+    magenta : (1.0, 0.0, 1.0),
+    pink : (1.0, 0.4, 0.7),
+    hot_pink : (1.0, 24, 255.0, 143, 255.0),
+    white : (1.0, 1.0, 1.0),
+    light_gray : (121, 255.0, 121, 255.0, 121, 255.0),
+    gray : (121, 255.0, 121, 255.0, 121, 255.0),
+    dark_gray : (65, 255.0, 65, 255.0, 65, 255.0),
+    black : (0.0, 0.0, 0.0),
+    brown : (127, 255.0, 82, 255.0, 3, 255.0),
+    tan : (1.0, 221, 255.0, 179, 255.0),
 }
-
 
 # function for confirming faces are selected
 def faces_confirm():
@@ -3297,6 +3279,16 @@ def create_landmark(colors):
         colors[2],
         type="double3"
     )
+
+def apply_material(faces, material):
+    '''
+    Assigns material to faces
+    '''
+    for face in faces:
+        cmds.select(face)
+        cmds.hyperShade(assign=material)
+
+apply_material(faces, red_shader)
 
 # ----------------------------
 # Misc Functions
