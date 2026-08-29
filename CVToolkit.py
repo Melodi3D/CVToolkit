@@ -10,7 +10,6 @@ from functools import partial
 import sys
 import os
 
-
 # ----------------------------
 # Joint Functions
 # ----------------------------
@@ -3198,30 +3197,35 @@ def lock_selection_visibility_curves():
 
 # landmark color presets
 landmark_colors = {
-    red : (1.0, 0.0, 0.0),
-    orange : (1.0, 0.5, 0.0),
-    yellow : (1.0, 1.0, 0.0),
-    lime: (170, 255.0, 235, 2550, 0.0),
-    green: (0.0, 1.0, 0.0),
-    cyan : (0.0, 1.0, 1.0),
-    teal : (0.0, 187, 2.550, 17, 255.0),
-    light_blue : (78, 255.0, 1.84, 255, 1.0),
-    blue : (0.0, 0.0, 1.0),
-    indigo : (140, 255.0, 82, 255.0, 1.0),
-    purple : (110, 255.0, 14, 255.0, 1.0),
-    magenta : (1.0, 0.0, 1.0),
-    pink : (1.0, 0.4, 0.7),
-    hot_pink : (1.0, 24, 255.0, 143, 255.0),
-    white : (1.0, 1.0, 1.0),
-    light_gray : (121, 255.0, 121, 255.0, 121, 255.0),
-    gray : (121, 255.0, 121, 255.0, 121, 255.0),
-    dark_gray : (65, 255.0, 65, 255.0, 65, 255.0),
-    black : (0.0, 0.0, 0.0),
-    brown : (127, 255.0, 82, 255.0, 3, 255.0),
-    tan : (1.0, 221, 255.0, 179, 255.0),
+    "red":        (1.0, 0.0, 0.0),
+    "orange":     (1.0, 0.5, 0.0),
+    "yellow":     (1.0, 1.0, 0.0),
+
+    "lime":       (170 / 255.0, 235 / 255.0, 0.0),
+    "green":      (0.0, 1.0, 0.0),
+    "cyan":       (0.0, 1.0, 1.0),
+
+    "teal":       (0.0, 187 / 255.0, 17 / 255.0),
+    "light_blue": (78 / 255.0, 184 / 255.0, 1.0),
+    "blue":       (0.0, 0.0, 1.0),
+
+    "indigo":     (140 / 255.0, 82 / 255.0, 1.0),
+    "purple":     (110 / 255.0, 14 / 255.0, 1.0),
+    "magenta":    (1.0, 0.0, 1.0),
+
+    "pink":       (1.0, 0.4, 0.7),
+    "hot_pink":   (1.0, 24 / 255.0, 143 / 255.0),
+
+    "white":      (1.0, 1.0, 1.0),
+    "light_gray": (0.75, 0.75, 0.75),
+    "gray":       (121 / 255.0, 121 / 255.0, 121 / 255.0),
+    "dark_gray":  (65 / 255.0, 65 / 255.0, 65 / 255.0),
+    "black":      (0.0, 0.0, 0.0),
+
+    "brown":      (127 / 255.0, 82 / 255.0, 3 / 255.0),
+    "tan":        (1.0, 221 / 255.0, 179 / 255.0),
 }
 
-# function for confirming faces are selected
 def faces_confirm():
     '''
     Confirms if faces are selected
@@ -3232,7 +3236,6 @@ def faces_confirm():
         button=["OK"]
     )
 
-# function for creating landmarks
 def create_landmark(colors):
     '''
     Creates colored landmarks
@@ -3303,12 +3306,7 @@ def snap_tool():
         raise RuntimeError("Select two objects to snap")
 
     cmds.matchTransform(object_selection[0], object_selection[1])
-# ----------------------------
-# ----------------------------
-# Presets
-# ----------------------------
-
-
+    
 # ----------------------------
 # UI Development
 # ----------------------------
