@@ -10,6 +10,7 @@ from functools import partial
 import sys
 import os
 
+
 # ----------------------------
 # Joint Functions
 # ----------------------------
@@ -3291,8 +3292,6 @@ def apply_material(faces, material):
         cmds.select(face)
         cmds.hyperShade(assign=material)
 
-apply_material(faces, red_shader)
-
 # ----------------------------
 # Misc Functions
 # ----------------------------
@@ -3306,7 +3305,7 @@ def snap_tool():
         raise RuntimeError("Select two objects to snap")
 
     cmds.matchTransform(object_selection[0], object_selection[1])
-    
+
 # ----------------------------
 # UI Development
 # ----------------------------
