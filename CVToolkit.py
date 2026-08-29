@@ -3288,9 +3288,8 @@ def apply_material(faces, material):
     '''
     Assigns material to faces
     '''
-    for face in faces:
-        cmds.select(face)
-        cmds.hyperShade(assign=material)
+    cmds.select(face)
+    cmds.hyperShade(assign=material)
 
 # ----------------------------
 # Misc Functions
@@ -3370,18 +3369,15 @@ class CVToolkit(QtWidgets.QWidget):
             )
 
             if button:
-
                 button.clicked.connect(
-                    partial(
-                        create_landmark,
-                        rgb_value
-                    )
+                    lambda checked=False, color=rgb_value:
+                    create_landmark(color)
                 )
 
             else:
 
                 print(
-                    f"// Warning: Could not find landmark "
+                    f"// Could not find landmark "
                     f"button named '{color_name}'"
                 )
 
