@@ -16,177 +16,228 @@ import os
 # ----------------------------
 
 # functions for joint selection
+def _selected_joints():
+    """Return selected joint nodes only."""
+    return cmds.ls(selection=True, type="joint", long=True) or []
+
+
 def joint_selection():
-    '''
-    Selects joints if available
-    '''
-    import maya.cmds as cmds
+    """Select all joints in the current Maya scene."""
+    joints = cmds.ls(type="joint", long=True) or []
+    if not joints:
+        cmds.warning("There are no joints in this scene")
+        return []
+    cmds.select(joints, replace=True)
+    return joints
 
-    joints = cmds.ls(type="joint")
-
-    if joints:
-        cmds.select(joints)
-
-    else:
-        raise RuntimeError("There are no joints in this scene")
 
 def create_center_joints():
-    '''
-    Creates joints at the center of object
-    '''
-    selection = cmds.ls(selection=True)
+    """Create one joint at the center of each selected transform/component."""
+    selection = cmds.ls(selection=True, flatten=True, long=True) or []
+    if not selection:
+        cmds.warning("Select at least one object or component")
+        return []
 
-    new_joint = cmds.joint()
-
-    cmds.parent(new_joint, world=True)
+    created = []
+    cmds.undoInfo(openChunk=True, chunkName="Create Center Joints")
+    try:
+        for item in selection:
+            position = cmds.xform(item, query=True, worldSpace=True, rotatePivot=True)
+            cmds.select(clear=True)
+            joint = cmds.joint(position=position)
+            created.append(joint)
+        cmds.select(created, replace=True)
+        return created
+    finally:
+        cmds.undoInfo(closeChunk=True)
 
 
 def mirror_joints():
-    '''
-    Mirrors joints in the current maya scene
-    '''
+    """Mirror the first selected joint hierarchy across YZ."""
+    joints = _selected_joints()
+    if not joints:
+        cmds.warning("Select a joint to mirror")
+        return []
+    return cmds.mirrorJoint(joints[0], mirrorYZ=True, mirrorBehavior=True) or []
 
-    joint_selection = cmds.ls(selection=True)
 
-    if joint_selection:
-        cmds.mirrorJoint(
-            joint_selection[0],
-            mirrorYZ=True,
-            mirrorBehavior=True
-        )
+def _offset_joint_orient(axis, amount=90.0):
+    joints = _selected_joints()
+    if not joints:
+        cmds.warning("Select joints to orient")
+        return
+    attr = ".jointOrient{}".format(axis.upper())
+    for joint in joints:
+        cmds.setAttr(joint + attr, cmds.getAttr(joint + attr) + amount)
 
-    else:
-        raise RuntimeError("Select joints to mirror")
 
 def orient_joints_X():
-    '''
-    Orients joints on the X axis
-    '''
-    joint_selection = cmds.ls(selection=True)
-
-    if joint_selection:
-        for joint in joint_selection:
-                current_value = cmds.getAttr(joint + ".jointOrientX")
-
-                cmds.setAttr(
-                    joint + ".jointOrientX",
-                    current_value + 90
-                )
-
-        else:
-            raise RuntimeError("Select joints to orient on X")
+    _offset_joint_orient("X")
 
 
 def orient_joints_Y():
-    '''
-    Orients joints on the Y axis
-    '''
-    joint_selection = cmds.ls(selection=True)
+    _offset_joint_orient("Y")
 
-    if joint_selection:
-        for joint in joint_selection:
-            current_value = cmds.getAttr(joint + ".jointOrientY")
-
-            cmds.setAttr(
-                joint + ".jointOrientY",
-                current_value + 90
-            )
-
-        else:
-            raise RuntimeError("Select joints to orient on Y")
 
 def orient_joints_Z():
-    '''
-    Orients joints on the Z axis
-    '''
-    joint_selection = cmds.ls(selection=True)
+    _offset_joint_orient("Z")
 
-    if joint_selection:
-        for joint in joint_selection:
-            current_value = cmds.getAttr(joint + ".jointOrientZ")
 
-            cmds.setAttr(
-                joint + ".jointOrientZ",
-                current_value + 90
-            )
+def _set_joint_channel_lock(channel, locked=True):
+    joints = _selected_joints()
+    if not joints:
+        cmds.warning("Select joints to lock/unlock {}".format(channel))
+        return
+
+    attrs = {
+        "translate": ("translateX", "translateY", "translateZ"),
+        "rotate": ("rotateX", "rotateY", "rotateZ"),
+        "scale": ("scaleX", "scaleY", "scaleZ"),
+        "visibility": ("visibility",),
+    }
+    for joint in joints:
+        for attr in attrs[channel]:
+            cmds.setAttr("{}.{}".format(joint, attr), lock=bool(locked))
+
+
+def lock_selection_translate(checked=False, *args):
+    """Lock/hide Translate when checked; unlock/show it when unchecked."""
+    selection = cmds.ls(selection=True)
+
+    if not selection:
+        cmds.warning("Select an object before changing Translate lock")
+        return
+
+    for obj in selection:
+        for attr in ("translateX", "translateY", "translateZ"):
+            plug = "{}.{}".format(obj, attr)
+
+            if checked:
+                # Lock + hide
+                cmds.setAttr(plug, lock=True)
+                cmds.setAttr(plug, keyable=False)
+                cmds.setAttr(plug, channelBox=False)
+
+            else:
+                # Unlock + restore normally
+                cmds.setAttr(plug, lock=False)
+                cmds.setAttr(plug, keyable=True)
+
+    state = "Locked and hid" if checked else "Unlocked and showed"
+    print("{} Translate on: {}".format(state, ", ".join(selection)))
+
+def lock_selection_rotate(checked=False, *args):
+    """Lock/hide rotate when checked; unlock/show it when unchecked."""
+    selection = cmds.ls(selection=True)
+
+    if not selection:
+        cmds.warning("Select an object before changing Rotate lock")
+        return
+
+    for obj in selection:
+        for attr in ("rotateX", "rotateY", "rotateZ"):
+            plug = "{}.{}".format(obj, attr)
+
+            if checked:
+                # Lock + hide
+                cmds.setAttr(plug, lock=True)
+                cmds.setAttr(plug, keyable=False)
+                cmds.setAttr(plug, channelBox=False)
+
+            else:
+                # Unlock + restore normally
+                cmds.setAttr(plug, lock=False)
+                cmds.setAttr(plug, keyable=True)
+
+    state = "Locked and hid" if checked else "Unlocked and showed"
+    print("{} Rotate on: {}".format(state, ", ".join(selection)))
+
+def lock_selection_scale(checked=False, *args):
+    """Lock/hide scale when checked; unlock/show it when unchecked."""
+    selection = cmds.ls(selection=True)
+
+    if not selection:
+        cmds.warning("Select an object before changing Scale lock")
+        return
+
+    for obj in selection:
+        for attr in ("scaleX", "scaleY", "scaleZ"):
+            plug = "{}.{}".format(obj, attr)
+
+            if checked:
+                # Lock + hide
+                cmds.setAttr(plug, lock=True)
+                cmds.setAttr(plug, keyable=False)
+                cmds.setAttr(plug, channelBox=False)
+
+            else:
+                # Unlock + restore normally
+                cmds.setAttr(plug, lock=False)
+                cmds.setAttr(plug, keyable=True)
+
+    state = "Locked and hid" if checked else "Unlocked and showed"
+    print("{} Rotate on: {}".format(state, ", ".join(selection)))
+
+def lock_selection_visibility(checked=False, *args):
+    """Lock/hide Visibility when checked; unlock/show it when unchecked."""
+    selection = cmds.ls(selection=True)
+
+    if not selection:
+        cmds.warning("Select an object before changing Visibility lock")
+        return
+
+    for obj in selection:
+        plug = "{}.visibility".format(obj)
+
+        if checked:
+            # Lock + hide
+            cmds.setAttr(plug, lock=True)
+            cmds.setAttr(plug, keyable=False)
+            cmds.setAttr(plug, channelBox=False)
 
         else:
-            raise RuntimeError("Select joints to orient on Z")
+            # Unlock + show
+            cmds.setAttr(plug, lock=False)
+            cmds.setAttr(plug, keyable=True)
 
-def lock_selection_translate_joints():
-    '''
-    Locks the translate of selected joints
-    '''
-    joints_selection = cmds.ls(type="joint")
-
-    if joints_selection:
-        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
-
-        cmds.select(joints)
-
-        for joint in joints:
-            cmds.setAttr(joint + ".translateX", lock=True)
-            cmds.setAttr(joint + ".translateY", lock=True)
-            cmds.setAttr(joint + ".translateZ", lock=True)
-    else:
-        raise RuntimeError("Select joints to lock translate")
-
-def lock_selection_rotate_joints():
-    '''
-    Locks the rotate of selected joints
-    '''
-    joints_selection = cmds.ls(type="joint")
-
-    if joints_selection:
-        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
-
-        cmds.select(joints)
-
-        for joint in joints:
-            cmds.setAttr(joint + ".rotateX", lock=True)
-            cmds.setAttr(joint + ".rotateY", lock=True)
-            cmds.setAttr(joint + ".rotateZ", lock=True)
-    else:
-        raise RuntimeError("Select joints to lock scale")
-
-def lock_selection_scale_joints():
-    '''
-    Locks the scale of selected joints
-    '''
-    joints_selection = cmds.ls(type="joint")
-
-    if joints_selection:
-        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
-
-        cmds.select(joints)
-
-        for joint in joints:
-            cmds.setAttr(joint + ".scaleX", lock=True)
-            cmds.setAttr(joint + ".scaleY", lock=True)
-            cmds.setAttr(joint + ".scaleZ", lock=True)
-    else:
-        raise RuntimeError("Select joints to lock scale")
-
-def lock_selection_visibility_joints():
-    '''
-    Locks the visibility of selected joints
-    '''
-    joints_selection = cmds.ls(type="joint")
-
-    if joints_selection:
-        joints = cmds.listRelatives(joints_selection, parent=True, fullPath=True)
-
-        cmds.select(joints)
-
-        for joint in joints:
-            cmds.setAttr(joint + ".visibility", lock=True)
-    else:
-        raise RuntimeError("Select joints to lock visibility")
+    state = "Locked and hid" if checked else "Unlocked and showed"
+    print("{} Visibility on: {}".format(state, ", ".join(selection)))
 
 
 # ----------------------------
 # Control Curves Functions
 # ----------------------------
+# cv color presets
+cv_colors = {
+    "red":        (1.0, 0.0, 0.0),
+    "orange":     (1.0, 0.5, 0.0),
+    "yellow":     (1.0, 1.0, 0.0),
+
+    "lime":       (170 / 255.0, 235 / 255.0, 0.0),
+    "green":      (0.0, 1.0, 0.0),
+    "cyan":       (0.0, 1.0, 1.0),
+
+    "teal":       (0.0, 187 / 255.0, 17 / 255.0),
+    "light_blue": (78 / 255.0, 184 / 255.0, 1.0),
+    "blue":       (0.0, 0.0, 1.0),
+
+    "indigo":     (140 / 255.0, 82 / 255.0, 1.0),
+    "purple":     (110 / 255.0, 14 / 255.0, 1.0),
+    "magenta":    (1.0, 0.0, 1.0),
+
+    "pink":       (1.0, 0.4, 0.7),
+    "hot_pink":   (1.0, 24 / 255.0, 143 / 255.0),
+
+    "white":      (1.0, 1.0, 1.0),
+    "light_gray": (0.75, 0.75, 0.75),
+    "gray":       (121 / 255.0, 121 / 255.0, 121 / 255.0),
+    "dark_gray":  (65 / 255.0, 65 / 255.0, 65 / 255.0),
+    "black":      (0.0, 0.0, 0.0),
+
+    "brown":      (127 / 255.0, 82 / 255.0, 3 / 255.0),
+    "tan":        (1.0, 221 / 255.0, 179 / 255.0),
+}
+
 # cv presets for data extraction and curve reconstruction
 cv_presets = {
     "preset_1": [
@@ -2820,377 +2871,197 @@ cv_presets = {
 }
 
 def curve_data_extraction():
+    """Extract all NURBS curve shapes beneath the first selected transform."""
+    selected = cmds.ls(selection=True, long=True) or []
+    if not selected:
+        cmds.warning("Please select a NURBS curve transform.")
+        return []
 
-    # -------------------------
-    # Select curve
-    # -------------------------
-
-    selected_objects = cmds.ls(
-        selection=True,
-        long=True
-    )
-
-    if not selected_objects:
-        cmds.error(
-            "Please select a NURBS curve."
-        )
-
-    selected_curve = selected_objects[0]
-
-
-    # -------------------------
-    # Get all curve shapes
-    # -------------------------
+    selected_curve = selected[0]
+    if cmds.nodeType(selected_curve) == "nurbsCurve":
+        selected_curve = (cmds.listRelatives(selected_curve, parent=True, fullPath=True) or [selected_curve])[0]
 
     curve_shapes = cmds.listRelatives(
-        selected_curve,
-        shapes=True,
-        type="nurbsCurve",
-        fullPath=True,
-        noIntermediate=True
-    )
-
+        selected_curve, shapes=True, type="nurbsCurve", fullPath=True, noIntermediate=True
+    ) or []
     if not curve_shapes:
-        cmds.error(
-            "Selected object does not contain a NURBS curve shape."
-        )
-
-
-    # -------------------------
-    # Store all shape data
-    # -------------------------
+        cmds.warning("Selected object does not contain a NURBS curve shape.")
+        return []
 
     curve_preset = []
-
-
-    # -------------------------
-    # Extract each curve shape
-    # -------------------------
-
     for shape in curve_shapes:
+        degree = cmds.getAttr(shape + ".degree")
+        form = cmds.getAttr(shape + ".form")
+        cvs = cmds.ls(shape + ".cv[*]", flatten=True, long=True) or []
+        points = [cmds.xform(cv, query=True, translation=True, objectSpace=True) for cv in cvs]
 
-        # -------------------------
-        # Degree
-        # -------------------------
+        # Pull the actual knot vector from the shape rather than synthesizing one.
+        # This preserves non-uniform and custom curves accurately.
+        sel = om.MSelectionList()
+        sel.add(shape)
+        dag = sel.getDagPath(0)
+        fn_curve = om.MFnNurbsCurve(dag)
+        knots = list(fn_curve.knots())
 
-        curve_degree = cmds.getAttr(
-            shape + ".degree"
-        )
-
-
-        # -------------------------
-        # Form
-        # -------------------------
-
-        curve_form = cmds.getAttr(
-            shape + ".form"
-        )
-
-
-        # -------------------------
-        # CV positions
-        # -------------------------
-
-        curve_points = []
-
-        curve_cvs = cmds.ls(
-            shape + ".cv[*]",
-            flatten=True,
-            long=True
-        )
-
-        for cv in curve_cvs:
-
-            cv_position = cmds.xform(
-                cv,
-                query=True,
-                translation=True,
-                objectSpace=True
-            )
-
-            curve_points.append(
-                cv_position
-            )
-
-        # -------------------------
-        # Knot vector
-        # -------------------------
-
-        cv_count = len(curve_points)
-
-        if curve_form == 2:
-            # Periodic curves are rebuilt with
-            # generated periodic knots later.
-            curve_knots = []
-
-        else:
-            # Number of spans for an open curve
-            spans = cv_count - curve_degree
-
-            # Standard clamped knot vector
-            curve_knots = (
-                    [0.0] * curve_degree
-                    + [float(i) for i in range(1, spans)]
-                    + [float(spans)] * curve_degree
-            )
-
-        # -------------------------
-        # Store shape data
-        # -------------------------
-
-        shape_data = {
-            "degree_data": curve_degree,
-            "cv_data": curve_points,
-            "form_data": curve_form,
-            "knot_data": curve_knots
-        }
-
-        curve_preset.append(
-            shape_data
-        )
-
-
-    # -------------------------
-    # Return all shapes
-    # -------------------------
+        curve_preset.append({
+            "degree_data": int(degree),
+            "cv_data": [list(p) for p in points],
+            "form_data": int(form),
+            "knot_data": knots,
+        })
 
     return curve_preset
 
 
+def _build_curve_shape(shape_data):
+    """Build one temporary curve transform from stored shape data."""
+    degree = int(shape_data["degree_data"])
+    points = [list(p) for p in shape_data["cv_data"]]
+    form = int(shape_data.get("form_data", 0))
+    knots = list(shape_data.get("knot_data") or [])
+
+    if len(points) < degree + 1:
+        raise RuntimeError("Curve preset has too few CVs for degree {}.".format(degree))
+
+    if form == 2:  # periodic
+        periodic_points = points + points[:degree]
+        kwargs = {"point": periodic_points, "degree": degree, "periodic": True}
+        # Historical presets may not contain knots; Maya can generate a valid vector.
+        if knots:
+            expected = len(periodic_points) + degree - 1
+            if len(knots) == expected:
+                kwargs["knot"] = knots
+        if "knot" not in kwargs:
+            kwargs["knot"] = list(range(len(periodic_points) + degree - 1))
+        return cmds.curve(**kwargs)
+
+    kwargs = {"point": points, "degree": degree}
+    expected_knots = len(points) + degree - 1
+    if knots and len(knots) == expected_knots:
+        kwargs["knot"] = knots
+    return cmds.curve(**kwargs)
+
+
 def curve_data_reconstruction(preset):
-    """
-    Rebuilds a stored curve preset.
+    """Rebuild a stored multi-shape curve preset and match it to the selected object."""
+    if not preset:
+        cmds.warning("Preset does not contain any curve data.")
+        return None
 
-    All Maya operations are grouped into a single undo step.
-    """
-
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="Create CV Preset"
-    )
-
+    target = (cmds.ls(selection=True, long=True) or [None])[0]
+    cmds.undoInfo(openChunk=True, chunkName="Create CV Preset")
     try:
+        rebuilt = [_build_curve_shape(shape_data) for shape_data in preset]
+        main_curve = rebuilt[0]
 
-        # -------------------------
-        # Store rebuilt curves
-        # -------------------------
+        # Combine shapes while every temporary transform is still at identity.
+        for extra_curve in rebuilt[1:]:
+            shapes = cmds.listRelatives(extra_curve, shapes=True, fullPath=True, noIntermediate=True) or []
+            for shape in shapes:
+                cmds.parent(shape, main_curve, shape=True, relative=True)
+            cmds.delete(extra_curve)
 
-        rebuilt_curves = []
+        if target and cmds.objExists(target):
+            cmds.matchTransform(main_curve, target, position=True, rotation=True, scale=True)
 
-
-        # -------------------------
-        # Rebuild every shape
-        # -------------------------
-
-        for shape_data in preset:
-
-            degree = shape_data["degree_data"]
-            points = shape_data["cv_data"]
-            preset_form = shape_data["form_data"]
-            knots = shape_data["knot_data"]
-
-
-            # -------------------------
-            # Periodic curve
-            # -------------------------
-
-            if preset_form == 2:
-
-                periodic_points = (
-                    points + points[:degree]
-                )
-
-                required_knot_count = (
-                    len(periodic_points)
-                    + degree
-                    - 1
-                )
-
-                periodic_knots = list(
-                    range(required_knot_count)
-                )
-
-                rebuilt_curve = cmds.curve(
-                    point=periodic_points,
-                    degree=degree,
-                    knot=periodic_knots,
-                    periodic=True
-                )
-
-
-            # -------------------------
-            # Open / closed curve
-            # -------------------------
-
-            else:
-
-                rebuilt_curve = cmds.curve(
-                    point=points,
-                    degree=degree,
-                    knot=knots
-                )
-
-
-            rebuilt_curves.append(
-                rebuilt_curve
-            )
-
-
-        # -------------------------
-        # Safety check
-        # -------------------------
-
-        if not rebuilt_curves:
-            raise RuntimeError(
-                "Preset does not contain any curve data."
-            )
-
-
-        # -------------------------
-        # Combine all curve shapes
-        # under one transform
-        # -------------------------
-
-        main_curve = rebuilt_curves[0]
-
-        for extra_curve in rebuilt_curves[1:]:
-
-            extra_shapes = cmds.listRelatives(
-                extra_curve,
-                shapes=True,
-                fullPath=True
-            ) or []
-
-            for shape in extra_shapes:
-
-                cmds.parent(
-                    shape,
-                    main_curve,
-                    shape=True,
-                    relative=True
-                )
-
-            cmds.delete(
-                extra_curve
-            )
-
-
-        # -------------------------
-        # Select completed control
-        # -------------------------
-
-        cmds.select(
-            main_curve,
-            replace=True
-        )
-
-
-        print(
-            "Rebuilt multi-shape curve:",
-            main_curve
-        )
-
+        cmds.select(main_curve, replace=True)
         return main_curve
-
-
     finally:
+        cmds.undoInfo(closeChunk=True)
 
-        cmds.undoInfo(
-            closeChunk=True
-        )
 
 def curve_selection():
-    '''
-    Selects curves, makes sure curves are selected
-    '''
-    curves_selection = cmds.ls(type="nurbsCurve")
-
-    if curves_selection:
-        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
-
-        cmds.select(curves)
-
-    else:
+    """Select all NURBS curve transforms in the scene."""
+    shapes = cmds.ls(type="nurbsCurve", long=True) or []
+    curves = list(dict.fromkeys(cmds.listRelatives(shapes, parent=True, fullPath=True) or []))
+    if not curves:
         cmds.warning("There are no curves in this scene")
+        return []
+    cmds.select(curves, replace=True)
+    return curves
+
+
+def _selected_curve_transforms():
+    """Return selected transforms that contain NURBS curve shapes."""
+    selected = cmds.ls(selection=True, long=True, objectsOnly=True) or []
+    result = []
+    for node in selected:
+        if cmds.nodeType(node) == "nurbsCurve":
+            parent = cmds.listRelatives(node, parent=True, fullPath=True) or []
+            node = parent[0] if parent else node
+        shapes = cmds.listRelatives(node, shapes=True, type="nurbsCurve", noIntermediate=True) or []
+        if shapes and node not in result:
+            result.append(node)
+    return result
+
+
+def curve_scale(scale_value=3.0):
+    """Scale CVs of selected curve controls without changing transform values."""
+    curves = _selected_curve_transforms()
+    if not curves:
+        cmds.warning("Select one or more curve controls to scale")
+        return
+    for curve in curves:
+        cmds.scale(scale_value, scale_value, scale_value, curve + ".cv[*]", relative=True, objectCenterPivot=True)
 
 
 def mirror_curves():
-    '''
-    Mirrors curves in the current maya scene
-    '''
-    curve_selection = cmds.ls(selection=True)
+    """Duplicate and mirror selected curve controls across world X."""
+    curves = _selected_curve_transforms()
+    if not curves:
+        cmds.warning("Select one or more curves to mirror")
+        return []
 
-    if curve_selection:
-        duplicated_curve = cmds.duplicate(curve_selection)
-
-        temporary_group = cmds.group(duplicated_curve[0], world=True)
-
-        cmds.setAttr(temporary_group + ".scaleX", -1)
-
-        mirrored_curves = cmds.ungroup(temporary_group)
-
-        cmds.makeIdentity(mirrored_curves, apply=True, scale=True)
-
-    else:
-        raise RuntimeError("Select curves to mirror")
-
-def lock_selection_translate_curves():
-    curves_selection = cmds.ls(type="nurbsCurve")
-
-    if curves_selection:
-        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
-
-        cmds.select(curves)
-
+    mirrored = []
+    cmds.undoInfo(openChunk=True, chunkName="Mirror Curves")
+    try:
         for curve in curves:
-            cmds.setAttr(curve + ".translateX", lock=True)
-            cmds.setAttr(curve + ".translateY", lock=True)
-            cmds.setAttr(curve + ".translateZ", lock=True)
-    else:
-        raise RuntimeError("Select curves to lock translate")
+            duplicate = cmds.duplicate(curve, returnRootsOnly=True)[0]
+            group = cmds.group(duplicate, world=True)
+            cmds.setAttr(group + ".scaleX", -1)
+            cmds.parent(duplicate, world=True)
+            cmds.delete(group)
+            cmds.makeIdentity(duplicate, apply=True, translate=False, rotate=False, scale=True)
+            mirrored.append(duplicate)
+        cmds.select(mirrored, replace=True)
+        return mirrored
+    finally:
+        cmds.undoInfo(closeChunk=True)
 
-def lock_selection_rotate_curves():
-    curves_selection = cmds.ls(type="nurbsCurve")
 
-    if curves_selection:
-        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+def _set_curve_channel_lock(channel, locked=True):
+    curves = _selected_curve_transforms()
+    if not curves:
+        cmds.warning("Select curves to lock/unlock {}".format(channel))
+        return
+    attrs = {
+        "translate": ("translateX", "translateY", "translateZ"),
+        "rotate": ("rotateX", "rotateY", "rotateZ"),
+        "scale": ("scaleX", "scaleY", "scaleZ"),
+        "visibility": ("visibility",),
+    }
+    for curve in curves:
+        for attr in attrs[channel]:
+            cmds.setAttr("{}.{}".format(curve, attr), lock=bool(locked), keyable=not bool(locked))
+            if locked:
+                cmds.setAttr("{}.{}".format(curve, attr), channelBox=False)
 
-        cmds.select(curves)
 
-        for curve in curves:
-            cmds.setAttr(curve + ".rotateX", lock=True)
-            cmds.setAttr(curve + ".rotateY", lock=True)
-            cmds.setAttr(curve + ".rotateZ", lock=True)
-    else:
-        raise RuntimeError("Select curves to lock rotate")
+def lock_selection_translate_curves(checked=True, *args):
+    _set_curve_channel_lock("translate", checked)
 
-def lock_selection_scale_curves():
-    curves_selection = cmds.ls(type="nurbsCurve")
 
-    if curves_selection:
-        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+def lock_selection_rotate_curves(checked=True, *args):
+    _set_curve_channel_lock("rotate", checked)
 
-        cmds.select(curves)
 
-        for curve in curves:
-            cmds.setAttr(curve + ".scaleX", lock=True)
-            cmds.setAttr(curve + ".scaleY", lock=True)
-            cmds.setAttr(curve + ".scaleZ", lock=True)
-    else:
-        raise RuntimeError("Select curves to lock scale")
+def lock_selection_scale_curves(checked=True, *args):
+    _set_curve_channel_lock("scale", checked)
 
-def lock_selection_visibility_curves():
-    curves_selection = cmds.ls(type="nurbsCurve")
 
-    if curves_selection:
-        curves = cmds.listRelatives(curves_selection, parent=True, fullPath=True)
+def lock_selection_visibility_curves(checked=True, *args):
+    _set_curve_channel_lock("visibility", checked)
 
-        cmds.select(curves)
-
-        for curve in curves:
-            cmds.setAttr(curve + ".visibility", lock=True)
-    else:
-        raise RuntimeError("Select curves to lock visibility")
 
 # ----------------------------
 # Landmark Functions
@@ -3285,10 +3156,13 @@ def create_landmark(colors):
     )
 
 def apply_material(faces, material):
-    '''
-    Assigns material to faces
-    '''
-    cmds.select(face)
+    """Assign a material to one or more polygon faces."""
+    if not faces:
+        cmds.warning("No faces supplied")
+        return
+    if not cmds.objExists(material):
+        raise RuntimeError("Material does not exist: {}".format(material))
+    cmds.select(faces, replace=True)
     cmds.hyperShade(assign=material)
 
 # ----------------------------
@@ -3350,12 +3224,13 @@ class CVToolkit(QtWidgets.QWidget):
         )
 
         # Load UI file dynamically
-        self.widget = QtUiTools.QUiLoader().load(
-            os.path.join(
-                self.widgetPath,
-                "CVToolkit.ui"
-            )
-        )
+        ui_file = os.path.join(self.widgetPath, "CVToolkit.ui")
+        if not os.path.exists(ui_file):
+            raise RuntimeError("CVToolkit UI file not found: {}".format(ui_file))
+
+        self.widget = QtUiTools.QUiLoader().load(ui_file)
+        if self.widget is None:
+            raise RuntimeError("Failed to load CVToolkit UI: {}".format(ui_file))
 
         # ----------------------------
         # Landmark Buttons
@@ -3527,15 +3402,31 @@ class CVToolkit(QtWidgets.QWidget):
             "btn_paw"
         )
 
-        self.btn_oval_rings = self.widget.findChild(
-            QtWidgets.QToolButton,
-            "btn_oval_rings"
-        )
-
         self.btn_visor = self.widget.findChild(
             QtWidgets.QToolButton,
             "btn_visor"
         )
+
+        self.btn_translate = self.widget.findChild(
+            QtWidgets.QCheckBox,
+            "btn_translate"
+        )
+
+        self.btn_rotate = self.widget.findChild(
+            QtWidgets.QCheckBox,
+            "btn_rotate"
+        )
+
+        self.btn_scale = self.widget.findChild(
+            QtWidgets.QCheckBox,
+            "btn_scale"
+        )
+
+        self.btn_visibility = self.widget.findChild(
+            QtWidgets.QCheckBox,
+            "btn_visibility"
+        )
+
 
         # Assign functionality to buttons
         if self.btn_arc180:
@@ -3677,6 +3568,18 @@ class CVToolkit(QtWidgets.QWidget):
             self.btn_visor.clicked.connect(
                 load_preset_28
             )
+
+        if self.btn_translate:
+            self.btn_translate.toggled.connect(lock_selection_translate)
+
+        if self.btn_rotate:
+            self.btn_rotate.toggled.connect(lock_selection_rotate)
+
+        if self.btn_scale:
+            self.btn_scale.toggled.connect(lock_selection_scale)
+
+        if self.btn_visibility:
+            self.btn_visibility.toggled.connect(lock_selection_visibility)
 
         # Maps custom curve buttons to PNG files
         self.button_icon_map = {
@@ -3894,3 +3797,5 @@ def openWindow():
     )
 
     CVToolkit.window.show()
+
+
