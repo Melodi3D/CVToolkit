@@ -37,4 +37,4 @@ Documentation includes
 
 • Planned Updates
 
-@ 2026 Melodi Clark melodic3d@gmail.com
+@ 2026 Melodi Clark
