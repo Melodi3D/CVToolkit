@@ -11,15 +11,10 @@ import sys
 import os
 
 
-# ----------------------------
+# ##################
 # Joint Functions
-# ----------------------------
-
+# ##################
 # functions for joint selection
-def _selected_joints():
-    """Return selected joint nodes only."""
-    return cmds.ls(selection=True, type="joint", long=True) or []
-
 
 def joint_selection():
     """Select all joints in the current Maya scene."""
@@ -51,162 +46,9 @@ def create_center_joints():
     finally:
         cmds.undoInfo(closeChunk=True)
 
-
-def mirror_joints():
-    """Mirror the first selected joint hierarchy across YZ."""
-    joints = _selected_joints()
-    if not joints:
-        cmds.warning("Select a joint to mirror")
-        return []
-    return cmds.mirrorJoint(joints[0], mirrorYZ=True, mirrorBehavior=True) or []
-
-
-def _offset_joint_orient(axis, amount=90.0):
-    joints = _selected_joints()
-    if not joints:
-        cmds.warning("Select joints to orient")
-        return
-    attr = ".jointOrient{}".format(axis.upper())
-    for joint in joints:
-        cmds.setAttr(joint + attr, cmds.getAttr(joint + attr) + amount)
-
-
-def orient_joints_X():
-    _offset_joint_orient("X")
-
-
-def orient_joints_Y():
-    _offset_joint_orient("Y")
-
-
-def orient_joints_Z():
-    _offset_joint_orient("Z")
-
-
-def _set_joint_channel_lock(channel, locked=True):
-    joints = _selected_joints()
-    if not joints:
-        cmds.warning("Select joints to lock/unlock {}".format(channel))
-        return
-
-    attrs = {
-        "translate": ("translateX", "translateY", "translateZ"),
-        "rotate": ("rotateX", "rotateY", "rotateZ"),
-        "scale": ("scaleX", "scaleY", "scaleZ"),
-        "visibility": ("visibility",),
-    }
-    for joint in joints:
-        for attr in attrs[channel]:
-            cmds.setAttr("{}.{}".format(joint, attr), lock=bool(locked))
-
-
-def lock_selection_translate(checked=False, *args):
-    """Lock/hide Translate when checked; unlock/show it when unchecked."""
-    selection = cmds.ls(selection=True)
-
-    if not selection:
-        cmds.warning("Select an object before changing Translate lock")
-        return
-
-    for obj in selection:
-        for attr in ("translateX", "translateY", "translateZ"):
-            plug = "{}.{}".format(obj, attr)
-
-            if checked:
-                # Lock + hide
-                cmds.setAttr(plug, lock=True)
-                cmds.setAttr(plug, keyable=False)
-                cmds.setAttr(plug, channelBox=False)
-
-            else:
-                # Unlock + restore normally
-                cmds.setAttr(plug, lock=False)
-                cmds.setAttr(plug, keyable=True)
-
-    state = "Locked and hid" if checked else "Unlocked and showed"
-    print("{} Translate on: {}".format(state, ", ".join(selection)))
-
-def lock_selection_rotate(checked=False, *args):
-    """Lock/hide rotate when checked; unlock/show it when unchecked."""
-    selection = cmds.ls(selection=True)
-
-    if not selection:
-        cmds.warning("Select an object before changing Rotate lock")
-        return
-
-    for obj in selection:
-        for attr in ("rotateX", "rotateY", "rotateZ"):
-            plug = "{}.{}".format(obj, attr)
-
-            if checked:
-                # Lock + hide
-                cmds.setAttr(plug, lock=True)
-                cmds.setAttr(plug, keyable=False)
-                cmds.setAttr(plug, channelBox=False)
-
-            else:
-                # Unlock + restore normally
-                cmds.setAttr(plug, lock=False)
-                cmds.setAttr(plug, keyable=True)
-
-    state = "Locked and hid" if checked else "Unlocked and showed"
-    print("{} Rotate on: {}".format(state, ", ".join(selection)))
-
-def lock_selection_scale(checked=False, *args):
-    """Lock/hide scale when checked; unlock/show it when unchecked."""
-    selection = cmds.ls(selection=True)
-
-    if not selection:
-        cmds.warning("Select an object before changing Scale lock")
-        return
-
-    for obj in selection:
-        for attr in ("scaleX", "scaleY", "scaleZ"):
-            plug = "{}.{}".format(obj, attr)
-
-            if checked:
-                # Lock + hide
-                cmds.setAttr(plug, lock=True)
-                cmds.setAttr(plug, keyable=False)
-                cmds.setAttr(plug, channelBox=False)
-
-            else:
-                # Unlock + restore normally
-                cmds.setAttr(plug, lock=False)
-                cmds.setAttr(plug, keyable=True)
-
-    state = "Locked and hid" if checked else "Unlocked and showed"
-    print("{} Rotate on: {}".format(state, ", ".join(selection)))
-
-def lock_selection_visibility(checked=False, *args):
-    """Lock/hide Visibility when checked; unlock/show it when unchecked."""
-    selection = cmds.ls(selection=True)
-
-    if not selection:
-        cmds.warning("Select an object before changing Visibility lock")
-        return
-
-    for obj in selection:
-        plug = "{}.visibility".format(obj)
-
-        if checked:
-            # Lock + hide
-            cmds.setAttr(plug, lock=True)
-            cmds.setAttr(plug, keyable=False)
-            cmds.setAttr(plug, channelBox=False)
-
-        else:
-            # Unlock + show
-            cmds.setAttr(plug, lock=False)
-            cmds.setAttr(plug, keyable=True)
-
-    state = "Locked and hid" if checked else "Unlocked and showed"
-    print("{} Visibility on: {}".format(state, ", ".join(selection)))
-
-
-# ----------------------------
+# ##################
 # Control Curves Functions
-# ----------------------------
+# ##################
 # cv color presets
 cv_colors = {
     "red":        (1.0, 0.0, 0.0),
@@ -3046,26 +2888,27 @@ def _set_curve_channel_lock(channel, locked=True):
             if locked:
                 cmds.setAttr("{}.{}".format(curve, attr), channelBox=False)
 
+def scale_object(self):
+    selection = cmds.ls(selection=True)
 
-def lock_selection_translate_curves(checked=True, *args):
-    _set_curve_channel_lock("translate", checked)
+    if not selection:
+        cmds.warning("Select an object to scale.")
+        return
 
+    try:
+        scale_value = float(self.scale_line.text())
+    except ValueError:
+        cmds.warning("Enter a valid scale value.")
+        return
 
-def lock_selection_rotate_curves(checked=True, *args):
-    _set_curve_channel_lock("rotate", checked)
+    for obj in selection:
+        cmds.setAttr(obj + ".scaleX", scale_value)
+        cmds.setAttr(obj + ".scaleY", scale_value)
+        cmds.setAttr(obj + ".scaleZ", scale_value)
 
-
-def lock_selection_scale_curves(checked=True, *args):
-    _set_curve_channel_lock("scale", checked)
-
-
-def lock_selection_visibility_curves(checked=True, *args):
-    _set_curve_channel_lock("visibility", checked)
-
-
-# ----------------------------
+# ##################
 # Landmark Functions
-# ----------------------------
+# ##################
 
 # landmark color presets
 landmark_colors = {
@@ -3165,9 +3008,137 @@ def apply_material(faces, material):
     cmds.select(faces, replace=True)
     cmds.hyperShade(assign=material)
 
-# ----------------------------
+def landmark_data_extraction(color):
+    """Store selected polygon faces and landmark color."""
+
+    faces = cmds.filterExpand(
+        cmds.ls(selection=True, flatten=True),
+        selectionMask=34
+    ) or []
+
+    if not faces:
+        cmds.warning("Select polygon faces to save as a landmark preset.")
+        return None
+
+    mesh = faces[0].split(".f[")[0]
+
+    face_indices = []
+
+    for face in faces:
+        index = int(
+            face.split(".f[")[1].replace("]", "")
+        )
+        face_indices.append(index)
+
+    return {
+        "mesh": mesh,
+        "faces": face_indices,
+        "color": list(color)
+    }
+
+def landmark_data_reconstruction(preset):
+    """Rebuild a saved landmark preset."""
+
+    if not preset:
+        cmds.warning("Landmark preset is empty.")
+        return
+
+    mesh = preset["mesh"]
+    face_indices = preset["faces"]
+    color = preset["color"]
+
+    if not cmds.objExists(mesh):
+        cmds.warning(
+            "Original landmark mesh no longer exists: {}".format(mesh)
+        )
+        return
+
+    faces = [
+        "{}.f[{}]".format(mesh, index)
+        for index in face_indices
+    ]
+
+    cmds.select(faces, replace=True)
+
+    create_landmark(color)
+
+# ############
 # Misc Functions
-# ----------------------------
+# ############
+def mirror_selection(plane="YZ", *args):
+    """Mirror selected joints, curves, or objects across YZ, XZ, or XY."""
+
+    selection = cmds.ls(selection=True)
+
+    if not selection:
+        cmds.warning("Select an object to mirror.")
+        return
+
+    # Plane -> perpendicular axis
+    axis_map = {
+        "YZ": "X",
+        "XZ": "Y",
+        "XY": "Z"
+    }
+
+    plane = plane.upper()
+
+    if plane not in axis_map:
+        cmds.warning("Mirror plane must be YZ, XZ, or XY.")
+        return
+
+    axis = axis_map[plane]
+
+    for obj in selection:
+
+        # JOINT
+        if cmds.nodeType(obj) == "joint":
+            mirror_joint(obj, axis)
+            continue
+
+        shapes = cmds.listRelatives(
+            obj,
+            shapes=True,
+            noIntermediate=True,
+            fullPath=True
+        ) or []
+
+        # NURBS CURVE
+        if any(cmds.nodeType(shape) == "nurbsCurve" for shape in shapes):
+            mirror_curve(obj, axis)
+            continue
+
+        # MESH / OTHER TRANSFORM
+        duplicate = cmds.duplicate(
+            obj,
+            renameChildren=True
+        )[0]
+
+        mirror_group = cmds.group(
+            empty=True,
+            world=True
+        )
+
+        cmds.parent(duplicate, mirror_group)
+
+        # YZ = flip X
+        if plane == "YZ":
+            cmds.setAttr(mirror_group + ".scaleX", -1)
+
+        # XZ = flip Y
+        elif plane == "XZ":
+            cmds.setAttr(mirror_group + ".scaleY", -1)
+
+        # XY = flip Z
+        elif plane == "XY":
+            cmds.setAttr(mirror_group + ".scaleZ", -1)
+
+        # Preserve mirrored world transform
+        cmds.parent(duplicate, world=True)
+
+        # Delete temporary mirror group
+        cmds.delete(mirror_group)
+
 def snap_tool():
     '''
     Snaps objects to each other
@@ -3178,19 +3149,195 @@ def snap_tool():
         raise RuntimeError("Select two objects to snap")
 
     cmds.matchTransform(object_selection[0], object_selection[1])
+def mirror_across_x():
+    """Mirror selected objects across the X axis."""
 
-# ----------------------------
+    selection = cmds.ls(selection=True)
+
+    for obj in selection:
+        mirrored_obj = cmds.duplicate(obj, renameChildren=True)[0]
+        cmds.scale(1, -1, -1, mirrored_obj, relative=True)
+
+
+def mirror_across_y():
+    """Mirror selected objects across the Y axis."""
+
+    selection = cmds.ls(selection=True)
+
+    for obj in selection:
+        mirrored_obj = cmds.duplicate(obj, renameChildren=True)[0]
+        cmds.scale(-1, 1, -1, mirrored_obj, relative=True)
+
+
+def mirror_across_z():
+    """Mirror selected objects across the Z axis."""
+
+    selection = cmds.ls(selection=True)
+
+    for obj in selection:
+        mirrored_obj = cmds.duplicate(obj, renameChildren=True)[0]
+        cmds.scale(-1, -1, 1, mirrored_obj, relative=True)
+
+def freeze_group():
+    """Freeze transforms on the selected objects."""
+
+    selection = cmds.ls(selection=True)
+
+    if not selection:
+        cmds.warning("Select an object or group to freeze.")
+        return
+
+    for obj in selection:
+        cmds.makeIdentity(
+            obj,
+            apply=True,
+            translate=True,
+            rotate=True,
+            scale=True,
+            normal=False
+        )
+
+# ##################
 # UI Development
-# ----------------------------
+# ##################
 class CVToolkit(QtWidgets.QWidget):
     """Creates CV Toolkit window."""
 
-    window = None
+    def save_user_preset(self):
+        new_name = self.preset_name.text().strip()
+
+        if not new_name:
+            cmds.warning("Enter a preset name.")
+            return
+
+        curve_data = curve_data_extraction()
+
+        if not curve_data:
+            cmds.warning("Select a curve to save.")
+            return
+
+        preset_buttons = [
+            ("preset1", self.btn_preset1),
+            ("preset2", self.btn_preset2),
+            ("preset3", self.btn_preset3),
+            ("preset4", self.btn_preset4),
+            ("preset5", self.btn_preset5),
+            ("preset6", self.btn_preset6),
+            ("preset7", self.btn_preset7),
+            ("preset8", self.btn_preset8),
+        ]
+
+        for preset_key, button in preset_buttons:
+            if button.isChecked():
+                self.user_presets[preset_key] = curve_data
+
+                button.setText(new_name)
+
+                self.preset_name.clear()
+
+                return
+
+        cmds.warning("Select a preset slot first.")
+
+    def load_user_preset(self, preset_key):
+
+        preset_data = self.user_presets.get(preset_key)
+
+        if not preset_data:
+            cmds.warning("This preset is empty.")
+            return
+
+        curve_data_reconstruction(preset_data)
+
+    def save_landmark_preset(self):
+        """Save selected faces into the selected landmark preset slot."""
+
+        if self.current_landmark_color is None:
+            cmds.warning("Choose a landmark color first.")
+            return
+
+        new_name = self.preset_name.text().strip()
+
+        if not new_name:
+            cmds.warning("Enter a preset name.")
+            return
+
+        preset_data = landmark_data_extraction(
+            self.current_landmark_color
+        )
+
+        if not preset_data:
+            return
+
+        preset_buttons = [
+            ("preset1", self.btn_preset1),
+            ("preset2", self.btn_preset2),
+            ("preset3", self.btn_preset3),
+            ("preset4", self.btn_preset4),
+            ("preset5", self.btn_preset5),
+            ("preset6", self.btn_preset6),
+            ("preset7", self.btn_preset7),
+            ("preset8", self.btn_preset8),
+        ]
+
+        for preset_key, button in preset_buttons:
+
+            if button.isChecked():
+                self.landmark_presets[preset_key] = preset_data
+
+                button.setText(new_name)
+
+                self.preset_name.clear()
+
+                return
+
+        cmds.warning("Select a preset slot first.")
+
+    def load_landmark_preset(self, preset_key):
+        """Load a saved landmark preset."""
+
+        preset_data = self.landmark_presets.get(preset_key)
+
+        if not preset_data:
+            cmds.warning("This landmark preset is empty.")
+            return
+
+        landmark_data_reconstruction(preset_data)
+
+    def create_landmark_from_ui(self, color):
+        """Create landmark and remember its color."""
+
+        self.current_landmark_color = color
+        create_landmark(color)
 
     def __init__(self, parent=None):
         """Initialize class."""
 
         super().__init__(parent)
+
+        self.user_presets = {
+            "preset1": None,
+            "preset2": None,
+            "preset3": None,
+            "preset4": None,
+            "preset5": None,
+            "preset6": None,
+            "preset7": None,
+            "preset8": None,
+        }
+
+        self.landmark_presets = {
+            "preset1": None,
+            "preset2": None,
+            "preset3": None,
+            "preset4": None,
+            "preset5": None,
+            "preset6": None,
+            "preset7": None,
+            "preset8": None,
+        }
+
+        self.current_landmark_color = None
 
         self.setWindowFlags(QtCore.Qt.Window)
 
@@ -3246,11 +3393,10 @@ class CVToolkit(QtWidgets.QWidget):
             if button:
                 button.clicked.connect(
                     lambda checked=False, color=rgb_value:
-                    create_landmark(color)
+                    self.create_landmark_from_ui(color)
                 )
 
             else:
-
                 print(
                     f"// Could not find landmark "
                     f"button named '{color_name}'"
@@ -3426,9 +3572,200 @@ class CVToolkit(QtWidgets.QWidget):
             QtWidgets.QCheckBox,
             "btn_visibility"
         )
+        self.btn_xy = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_xy"
+        )
+        self.btn_yz = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_yz"
+        )
+        self.btn_xz = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_xz"
+        )
+        self.scale_line = self.widget.findChild(
+            QtWidgets.QLineEdit,
+            "scale_line"
+        )
+        self.btn_axisx = self.widget.findChild(
+            QtWidgets.QRadioButton,
+            "btn_axisx"
+        )
+        self.btn_axisy = self.widget.findChild(
+            QtWidgets.QRadioButton,
+            "btn_axisy"
+        )
+        self.btn_axisz = self.widget.findChild(
+            QtWidgets.QRadioButton,
+            "btn_axisz"
+        )
+        self.btn_center_joints = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_center_joints"
+        )
+        self.btn_select_joints = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_select_joints"
+        )
+        self.btn_select_controls = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_select_controls"
+        )
+        self.btn_freeze_group = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_freeze_group"
+        )
+        self.btn_center_joints = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_center_joints"
+        )
+        self.btn_snap = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "btn_snap"
+        )
+        self.preset_name = self.widget.findChild(
+            QtWidgets.QLineEdit,
+            "preset_name"
+        )
+        self.preset_save = self.widget.findChild(
+            QtWidgets.QPushButton,
+            "preset_save"
+        )
+        self.btn_preset1 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset1"
+        )
 
+        self.btn_preset2 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset2"
+        )
+
+        self.btn_preset3 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset3"
+        )
+
+        self.btn_preset4 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset4"
+        )
+
+        self.btn_preset5 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset5"
+        )
+
+        self.btn_preset6 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset6"
+        )
+
+        self.btn_preset7 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset7"
+        )
+
+        self.btn_preset8 = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_preset8"
+        )
+        self.btn_extra = self.widget.findChild(
+            QtWidgets.QToolButton,
+            "btn_extra"
+        )
+
+################
+# Loading Presets
+#################
 
         # Assign functionality to buttons
+
+        def load_preset_1():
+            curve_data_reconstruction(cv_presets["preset_1"])
+
+        def load_preset_2():
+            curve_data_reconstruction(cv_presets["preset_2"])
+
+        def load_preset_3():
+            curve_data_reconstruction(cv_presets["preset_3"])
+
+        def load_preset_4():
+            curve_data_reconstruction(cv_presets["preset_4"])
+
+        def load_preset_5():
+            curve_data_reconstruction(cv_presets["preset_5"])
+
+        def load_preset_6():
+            curve_data_reconstruction(cv_presets["preset_6"])
+
+        def load_preset_7():
+            curve_data_reconstruction(cv_presets["preset_7"])
+
+        def load_preset_8():
+            curve_data_reconstruction(cv_presets["preset_8"])
+
+        def load_preset_9():
+            curve_data_reconstruction(cv_presets["preset_9"])
+
+        def load_preset_10():
+            curve_data_reconstruction(cv_presets["preset_10"])
+
+        def load_preset_11():
+            curve_data_reconstruction(cv_presets["preset_11"])
+
+        def load_preset_12():
+            curve_data_reconstruction(cv_presets["preset_12"])
+
+        def load_preset_13():
+            curve_data_reconstruction(cv_presets["preset_13"])
+
+        def load_preset_14():
+            curve_data_reconstruction(cv_presets["preset_14"])
+
+        def load_preset_15():
+            curve_data_reconstruction(cv_presets["preset_15"])
+
+        def load_preset_16():
+            curve_data_reconstruction(cv_presets["preset_16"])
+
+        def load_preset_17():
+            curve_data_reconstruction(cv_presets["preset_17"])
+
+        def load_preset_18():
+            curve_data_reconstruction(cv_presets["preset_18"])
+
+        def load_preset_19():
+            curve_data_reconstruction(cv_presets["preset_19"])
+
+        def load_preset_20():
+            curve_data_reconstruction(cv_presets["preset_20"])
+
+        def load_preset_21():
+            curve_data_reconstruction(cv_presets["preset_21"])
+
+        def load_preset_22():
+            curve_data_reconstruction(cv_presets["preset_22"])
+
+        def load_preset_23():
+            curve_data_reconstruction(cv_presets["preset_23"])
+
+        def load_preset_24():
+            curve_data_reconstruction(cv_presets["preset_24"])
+
+        def load_preset_25():
+            curve_data_reconstruction(cv_presets["preset_25"])
+
+        def load_preset_26():
+            curve_data_reconstruction(cv_presets["preset_26"])
+
+        def load_preset_27():
+            curve_data_reconstruction(cv_presets["preset_27"])
+
+        def load_preset_28():
+            curve_data_reconstruction(cv_presets["preset_28"])
+
         if self.btn_arc180:
             self.btn_arc180.clicked.connect(
                 load_preset_1
@@ -3581,6 +3918,103 @@ class CVToolkit(QtWidgets.QWidget):
         if self.btn_visibility:
             self.btn_visibility.toggled.connect(lock_selection_visibility)
 
+        if self.btn_yz:
+            self.btn_yz.clicked.connect(
+                lambda checked=False: mirror_selection("YZ")
+            )
+
+        if self.btn_xz:
+            self.btn_xz.clicked.connect(
+                lambda checked=False: mirror_selection("XZ")
+            )
+
+        if self.btn_xy:
+            self.btn_xy.clicked.connect(
+                lambda checked=False: mirror_selection("XY")
+            )
+        if self.scale_line:
+            self.scale_line.returnPressed.connect(
+                lambda: scale_object(self)
+            )
+        self.btn_axisx.clicked.connect(mirror_across_x)
+        self.btn_axisy.clicked.connect(mirror_across_y)
+        self.btn_axisz.clicked.connect(mirror_across_z)
+
+        if self.btn_select_controls:
+            self.btn_select_controls.clicked.connect(
+                lambda: curve_selection()
+            )
+        if self.btn_select_joints:
+            self.btn_select_joints.clicked.connect(
+                lambda: joint_selection()
+            )
+        if self.btn_freeze_group:
+            self.btn_freeze_group.clicked.connect(
+                lambda: freeze_group()
+            )
+        if self.btn_center_joints:
+            self.btn_center_joints.clicked.connect(
+                lambda: create_center_joints()
+            )
+        if self.btn_snap:
+            self.btn_snap.clicked.connect(
+                lambda: snap_tool()
+            )
+
+        if self.preset_save:
+            self.preset_save.clicked.connect(
+                self.save_landmark_preset
+            )
+
+        if self.preset_name:
+            self.preset_name.returnPressed.connect(
+                self.save_landmark_preset
+            )
+
+        self.btn_preset1.clicked.connect(
+            lambda: self.load_landmark_preset("preset1")
+        )
+
+        self.btn_preset2.clicked.connect(
+            lambda: self.load_landmark_preset("preset2")
+        )
+
+        self.btn_preset3.clicked.connect(
+            lambda: self.load_landmark_preset("preset3")
+        )
+
+        self.btn_preset4.clicked.connect(
+            lambda: self.load_landmark_preset("preset4")
+        )
+
+        self.btn_preset5.clicked.connect(
+            lambda: self.load_landmark_preset("preset5")
+        )
+
+        self.btn_preset6.clicked.connect(
+            lambda: self.load_landmark_preset("preset6")
+        )
+
+        self.btn_preset7.clicked.connect(
+            lambda: self.load_landmark_preset("preset7")
+        )
+
+        self.btn_preset8.clicked.connect(
+            lambda: self.load_landmark_preset("preset8")
+        )
+
+        for button in [
+            self.btn_preset1,
+            self.btn_preset2,
+            self.btn_preset3,
+            self.btn_preset4,
+            self.btn_preset5,
+            self.btn_preset6,
+            self.btn_preset7,
+            self.btn_preset8,
+        ]:
+            button.setCheckable(True)
+
         # Maps custom curve buttons to PNG files
         self.button_icon_map = {
             "btn_arc180": "arc180.png",
@@ -3679,92 +4113,6 @@ class CVToolkit(QtWidgets.QWidget):
                     f"// Warning: Could not find UI tool "
                     f"button named '{btn_name}'"
                 )
-################
-#Loading Presets
-################
-def load_preset_1():
-    curve_data_reconstruction(cv_presets["preset_1"])
-
-def load_preset_2():
-    curve_data_reconstruction(cv_presets["preset_2"])
-
-def load_preset_3():
-    curve_data_reconstruction(cv_presets["preset_3"])
-
-def load_preset_4():
-    curve_data_reconstruction(cv_presets["preset_4"])
-
-def load_preset_5():
-    curve_data_reconstruction(cv_presets["preset_5"])
-
-def load_preset_6():
-    curve_data_reconstruction(cv_presets["preset_6"])
-
-def load_preset_7():
-    curve_data_reconstruction(cv_presets["preset_7"])
-
-def load_preset_8():
-    curve_data_reconstruction(cv_presets["preset_8"])
-
-def load_preset_9():
-    curve_data_reconstruction(cv_presets["preset_9"])
-
-def load_preset_10():
-    curve_data_reconstruction(cv_presets["preset_10"])
-
-def load_preset_11():
-    curve_data_reconstruction(cv_presets["preset_11"])
-
-def load_preset_12():
-    curve_data_reconstruction(cv_presets["preset_12"])
-
-def load_preset_13():
-    curve_data_reconstruction(cv_presets["preset_13"])
-
-def load_preset_14():
-    curve_data_reconstruction(cv_presets["preset_14"])
-
-def load_preset_15():
-    curve_data_reconstruction(cv_presets["preset_15"])
-
-def load_preset_16():
-    curve_data_reconstruction(cv_presets["preset_16"])
-
-def load_preset_17():
-    curve_data_reconstruction(cv_presets["preset_17"])
-
-def load_preset_18():
-    curve_data_reconstruction(cv_presets["preset_18"])
-
-def load_preset_19():
-    curve_data_reconstruction(cv_presets["preset_19"])
-
-def load_preset_20():
-    curve_data_reconstruction(cv_presets["preset_20"])
-
-def load_preset_21():
-    curve_data_reconstruction(cv_presets["preset_21"])
-
-def load_preset_22():
-    curve_data_reconstruction(cv_presets["preset_22"])
-
-def load_preset_23():
-    curve_data_reconstruction(cv_presets["preset_23"])
-
-def load_preset_24():
-    curve_data_reconstruction(cv_presets["preset_24"])
-
-def load_preset_25():
-    curve_data_reconstruction(cv_presets["preset_25"])
-
-def load_preset_26():
-    curve_data_reconstruction(cv_presets["preset_26"])
-
-def load_preset_27():
-    curve_data_reconstruction(cv_presets["preset_27"])
-
-def load_preset_28():
-    curve_data_reconstruction(cv_presets["preset_28"])
 
 def openWindow():
     """Attach CV Toolkit to Maya's main window."""
