@@ -52,6 +52,14 @@ CVToolkit should now open inside Maya.
 
 You can also add the launch code to a Maya shelf button for quicker access.
 
-• Planned Updates
+# Planned Updates
+
+CVToolkit is still something I would like to continue developing. Some areas I would like to explore in future versions include:
+
+• More rigging utilities
+• Improved preset management
+• Additional control shapes
+• Better organization of the tool's modules
+• More workflow automation
 
 @ 2026 Melodi Clark
