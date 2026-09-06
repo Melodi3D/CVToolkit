@@ -4,7 +4,7 @@
 
 # CVToolkit
 CVToolKit is a Maya tool designed to expedite the creation of custom CV-based controls and modeling landmarks. This is an expanded version of my original landmarkTool project.
-![CV Creation Demo](assets/gif1.gif)
+![CV Creation Demo](media/gif1.gif)
 
 # Software Used
 Autodesk Maya 2025 • Python • PySide6 • Qt Designer • Adobe Photoshop
