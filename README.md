@@ -14,9 +14,10 @@ The goal of this project is to create a comprehensive toolkit for riggers, provi
 
 # Features:
 •  Landmark Creation with reusable user presets.
-![CV Toolkit Demo](gif1.gif)
+![CV Toolkit Demo](gif2.gif)
 
 •  Object-Specific landmark presets
+![CV Toolkit Demo](gif1.gif)
 
 •  Custom CV control library
 
