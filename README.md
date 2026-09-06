@@ -32,11 +32,25 @@ The goal of this project is to create a comprehensive toolkit for riggers, provi
 •  Multi Curve Shape data extraction and reconstruction
 
 # Documentation
-Documentation includes
+## Installation
 
-• Installation Guide
+1. Download the CVToolkit folder.
+2. Place the entire `CVToolkit` folder inside your Maya scripts directory:
 
-• How to Use
+   `Documents/maya/2025/scripts/`
+
+3. Restart Maya.
+4. Open the **Python** tab of Maya's Script Editor.
+5. Run:
+
+```python
+import CVToolkit.CVToolkit as cvt
+cvt.openWindow()
+```
+
+CVToolkit should now open inside Maya.
+
+You can also add the launch code to a Maya shelf button for quicker access.
 
 • Planned Updates
 
