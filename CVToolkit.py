@@ -10,14 +10,13 @@ from functools import partial
 import sys
 import os
 
-
 # ##################
 # Joint Functions
 # ##################
-# functions for joint selection
+# Functions for joint selection
 
 def joint_selection():
-    """Select all joints in the current Maya scene."""
+    """Selects all joints in the current Maya scene"""
     joints = cmds.ls(type="joint", long=True) or []
     if not joints:
         cmds.warning("There are no joints in this scene")
@@ -27,7 +26,7 @@ def joint_selection():
 
 
 def create_center_joints():
-    """Create one joint at the center of each selected transform/component."""
+    """Creates one joint at the center of each selected transform/component"""
     selection = cmds.ls(selection=True, flatten=True, long=True) or []
     if not selection:
         cmds.warning("Select at least one object or component")
@@ -2711,12 +2710,12 @@ cv_presets = {
     }
     ]
 }
-
+# data extraction
 def curve_data_extraction():
-    """Extract all NURBS curve shapes beneath the first selected transform."""
+    """Extracts all nurbs curve shapes beneath the first selected transform"""
     selected = cmds.ls(selection=True, long=True) or []
     if not selected:
-        cmds.warning("Please select a NURBS curve transform.")
+        cmds.warning("Please select a nurbs curve transform")
         return []
 
     selected_curve = selected[0]
@@ -2727,7 +2726,7 @@ def curve_data_extraction():
         selected_curve, shapes=True, type="nurbsCurve", fullPath=True, noIntermediate=True
     ) or []
     if not curve_shapes:
-        cmds.warning("Selected object does not contain a NURBS curve shape.")
+        cmds.warning("Selected object is not a nurbs curve shape")
         return []
 
     curve_preset = []
@@ -2736,9 +2735,6 @@ def curve_data_extraction():
         form = cmds.getAttr(shape + ".form")
         cvs = cmds.ls(shape + ".cv[*]", flatten=True, long=True) or []
         points = [cmds.xform(cv, query=True, translation=True, objectSpace=True) for cv in cvs]
-
-        # Pull the actual knot vector from the shape rather than synthesizing one.
-        # This preserves non-uniform and custom curves accurately.
         sel = om.MSelectionList()
         sel.add(shape)
         dag = sel.getDagPath(0)
@@ -2756,7 +2752,7 @@ def curve_data_extraction():
 
 
 def _build_curve_shape(shape_data):
-    """Build one temporary curve transform from stored shape data."""
+    """Builds one temporary curve transform from stored shape data"""
     degree = int(shape_data["degree_data"])
     points = [list(p) for p in shape_data["cv_data"]]
     form = int(shape_data.get("form_data", 0))
@@ -2768,7 +2764,7 @@ def _build_curve_shape(shape_data):
     if form == 2:  # periodic
         periodic_points = points + points[:degree]
         kwargs = {"point": periodic_points, "degree": degree, "periodic": True}
-        # Historical presets may not contain knots; Maya can generate a valid vector.
+    # Historical presets may not contain knots; Maya can generate a valid vector.
         if knots:
             expected = len(periodic_points) + degree - 1
             if len(knots) == expected:
@@ -2785,7 +2781,7 @@ def _build_curve_shape(shape_data):
 
 
 def curve_data_reconstruction(preset):
-    """Rebuild a stored multi-shape curve preset and match it to the selected object."""
+    """Rebuilds a stored multi-shape curve preset and match it to the selected object"""
     if not preset:
         cmds.warning("Preset does not contain any curve data.")
         return None
@@ -2813,7 +2809,7 @@ def curve_data_reconstruction(preset):
 
 
 def curve_selection():
-    """Select all NURBS curve transforms in the scene."""
+    """Selects all NURBS curve transforms in the scene"""
     shapes = cmds.ls(type="nurbsCurve", long=True) or []
     curves = list(dict.fromkeys(cmds.listRelatives(shapes, parent=True, fullPath=True) or []))
     if not curves:
@@ -2824,7 +2820,7 @@ def curve_selection():
 
 
 def _selected_curve_transforms():
-    """Return selected transforms that contain NURBS curve shapes."""
+    """Return selected transforms that contain NURBS curve shapes"""
     selected = cmds.ls(selection=True, long=True, objectsOnly=True) or []
     result = []
     for node in selected:
@@ -2838,7 +2834,7 @@ def _selected_curve_transforms():
 
 
 def curve_scale(scale_value=3.0):
-    """Scale CVs of selected curve controls without changing transform values."""
+    """Scale CVs of selected curve controls without changing transform values"""
     curves = _selected_curve_transforms()
     if not curves:
         cmds.warning("Select one or more curve controls to scale")
@@ -2848,7 +2844,7 @@ def curve_scale(scale_value=3.0):
 
 
 def mirror_curves():
-    """Duplicate and mirror selected curve controls across world X."""
+    """Duplicates and mirrors selected curve controls across world X"""
     curves = _selected_curve_transforms()
     if not curves:
         cmds.warning("Select one or more curves to mirror")
@@ -2942,9 +2938,7 @@ landmark_colors = {
 }
 
 def faces_confirm():
-    '''
-    Confirms if faces are selected
-    '''
+    """ Confirms if faces are selected"""
     cmds.confirmDialog(
         title="CV Toolkit",
         message="Please select at least one polygon face.",
@@ -2952,9 +2946,7 @@ def faces_confirm():
     )
 
 def create_landmark(colors):
-    '''
-    Creates colored landmarks
-    '''
+    """Creates colored landmarks"""
     # user selects faces
     selection = cmds.ls(sl=True, flatten=True)
 
@@ -2999,7 +2991,7 @@ def create_landmark(colors):
     )
 
 def apply_material(faces, material):
-    """Assign a material to one or more polygon faces."""
+    """Assigns a material to one or more polygon faces"""
     if not faces:
         cmds.warning("No faces supplied")
         return
@@ -3009,7 +3001,7 @@ def apply_material(faces, material):
     cmds.hyperShade(assign=material)
 
 def landmark_data_extraction(color):
-    """Store selected polygon faces and landmark color."""
+    """Store selected polygon faces and landmark color"""
 
     faces = cmds.filterExpand(
         cmds.ls(selection=True, flatten=True),
@@ -3037,7 +3029,7 @@ def landmark_data_extraction(color):
     }
 
 def landmark_data_reconstruction(preset):
-    """Rebuild a saved landmark preset."""
+    """Rebuilds a saved landmark preset"""
 
     if not preset:
         cmds.warning("Landmark preset is empty.")
@@ -3140,9 +3132,7 @@ def mirror_selection(plane="YZ", *args):
         cmds.delete(mirror_group)
 
 def snap_tool():
-    '''
-    Snaps objects to each other
-    '''
+    """snaps objects to each other"""
     object_selection = cmds.ls(selection=True)
 
     if len(object_selection) < 2:
@@ -3150,7 +3140,7 @@ def snap_tool():
 
     cmds.matchTransform(object_selection[0], object_selection[1])
 def mirror_across_x():
-    """Mirror selected objects across the X axis."""
+    """Mirror selected objects across the X axis"""
 
     selection = cmds.ls(selection=True)
 
@@ -3160,8 +3150,7 @@ def mirror_across_x():
 
 
 def mirror_across_y():
-    """Mirror selected objects across the Y axis."""
-
+    """Mirrors selected objects across the Y axis"""
     selection = cmds.ls(selection=True)
 
     for obj in selection:
@@ -3170,7 +3159,7 @@ def mirror_across_y():
 
 
 def mirror_across_z():
-    """Mirror selected objects across the Z axis."""
+    """Mirrors selected objects across the Z axis."""
 
     selection = cmds.ls(selection=True)
 
@@ -3201,8 +3190,7 @@ def freeze_group():
 # UI Development
 # ##################
 class CVToolkit(QtWidgets.QWidget):
-    """Creates CV Toolkit window."""
-
+    """Creates a window for CV Toolkit"""
     def save_user_preset(self):
         new_name = self.preset_name.text().strip()
 
@@ -3240,7 +3228,7 @@ class CVToolkit(QtWidgets.QWidget):
         cmds.warning("Select a preset slot first.")
 
     def load_user_preset(self, preset_key):
-
+        """Loads selected faces into the selected landmark preset slot"""
         preset_data = self.user_presets.get(preset_key)
 
         if not preset_data:
@@ -3250,16 +3238,16 @@ class CVToolkit(QtWidgets.QWidget):
         curve_data_reconstruction(preset_data)
 
     def save_landmark_preset(self):
-        """Save selected faces into the selected landmark preset slot."""
+        """Saves selected faces into the selected landmark preset slot"""
 
         if self.current_landmark_color is None:
-            cmds.warning("Choose a landmark color first.")
+            cmds.warning("Choose a landmark color first")
             return
 
         new_name = self.preset_name.text().strip()
 
         if not new_name:
-            cmds.warning("Enter a preset name.")
+            cmds.warning("Enter your preset name")
             return
 
         preset_data = landmark_data_extraction(
@@ -3294,7 +3282,7 @@ class CVToolkit(QtWidgets.QWidget):
         cmds.warning("Select a preset slot first.")
 
     def load_landmark_preset(self, preset_key):
-        """Load a saved landmark preset."""
+        """Loads a saved landmark preset"""
 
         preset_data = self.landmark_presets.get(preset_key)
 
@@ -3305,7 +3293,7 @@ class CVToolkit(QtWidgets.QWidget):
         landmark_data_reconstruction(preset_data)
 
     def create_landmark_from_ui(self, color):
-        """Create landmark and remember its color."""
+        """Creates landmark and remember its color"""
 
         self.current_landmark_color = color
         create_landmark(color)
@@ -3379,9 +3367,9 @@ class CVToolkit(QtWidgets.QWidget):
         if self.widget is None:
             raise RuntimeError("Failed to load CVToolkit UI: {}".format(ui_file))
 
-        # ----------------------------
+        # ##############
         # Landmark Buttons
-        # ----------------------------
+        # ##############
 
         for color_name, rgb_value in landmark_colors.items():
 
@@ -3676,11 +3664,11 @@ class CVToolkit(QtWidgets.QWidget):
             "btn_extra"
         )
 
-################
-# Loading Presets
-#################
+    ################
+    # Loading Presets
+    #################
 
-        # Assign functionality to buttons
+    # Assigns functionality to buttons
 
         def load_preset_1():
             curve_data_reconstruction(cv_presets["preset_1"])
@@ -4056,7 +4044,7 @@ class CVToolkit(QtWidgets.QWidget):
         self.load_tool_button_icons()
 
     def resizeEvent(self, event):
-        """Called on automatically generated resize event."""
+        """Called on automatically generated resize event"""
 
         self.widget.resize(
             self.width(),
@@ -4064,7 +4052,7 @@ class CVToolkit(QtWidgets.QWidget):
         )
 
     def load_tool_button_icons(self):
-        """Load transparent icons onto tool buttons."""
+        """Loads transparent icons onto tool buttons"""
 
         for btn_name, icon_filename in self.button_icon_map.items():
 
@@ -4115,7 +4103,7 @@ class CVToolkit(QtWidgets.QWidget):
                 )
 
 def openWindow():
-    """Attach CV Toolkit to Maya's main window."""
+    """Attachs CV Toolkit to Maya's main window"""
 
     if QtWidgets.QApplication.instance():
 
