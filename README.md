@@ -27,6 +27,7 @@ The goal of this project is to create a comprehensive toolkit for riggers, provi
 •  Customizable CV colors
 
 •  Joint and curve selection utilities
+![CV Toolkit Demo](media/gif4.gif)
 
 •  Multi Curve Shape data extraction and reconstruction
 
