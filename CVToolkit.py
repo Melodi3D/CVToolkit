@@ -13,7 +13,7 @@ import os
 # ##################
 # Joint Functions
 # ##################
-# Functions for joint selection
+# functions for joint selection
 
 def joint_selection():
     """Selects all joints in the current Maya scene"""
@@ -3066,7 +3066,6 @@ def mirror_selection(plane="YZ", *args):
         cmds.warning("Select an object to mirror.")
         return
 
-    # Plane -> perpendicular axis
     axis_map = {
         "YZ": "X",
         "XZ": "Y",
@@ -3083,7 +3082,6 @@ def mirror_selection(plane="YZ", *args):
 
     for obj in selection:
 
-        # JOINT
         if cmds.nodeType(obj) == "joint":
             mirror_joint(obj, axis)
             continue
@@ -3095,12 +3093,10 @@ def mirror_selection(plane="YZ", *args):
             fullPath=True
         ) or []
 
-        # NURBS CURVE
         if any(cmds.nodeType(shape) == "nurbsCurve" for shape in shapes):
             mirror_curve(obj, axis)
             continue
 
-        # MESH / OTHER TRANSFORM
         duplicate = cmds.duplicate(
             obj,
             renameChildren=True
@@ -3185,6 +3181,57 @@ def freeze_group():
             scale=True,
             normal=False
         )
+def _set_selected_attr_lock(attributes, locked):
+    """Lock or unlock attributes on the current selection."""
+    selection = cmds.ls(selection=True) or []
+
+    if not selection:
+        cmds.warning("Select at least one object.")
+        return
+
+    for obj in selection:
+        for attr in attributes:
+            plug = f"{obj}.{attr}"
+
+            if cmds.objExists(plug):
+                cmds.setAttr(
+                    plug,
+                    lock=locked,
+                    keyable=not locked,
+                    channelBox=not locked
+                )
+
+
+def lock_selection_translate(checked):
+    """Lock or unlock translate attributes."""
+    _set_selected_attr_lock(
+        ["translateX", "translateY", "translateZ"],
+        checked
+    )
+
+
+def lock_selection_rotate(checked):
+    """Lock or unlock rotate attributes."""
+    _set_selected_attr_lock(
+        ["rotateX", "rotateY", "rotateZ"],
+        checked
+    )
+
+
+def lock_selection_scale(checked):
+    """Lock or unlock scale attributes."""
+    _set_selected_attr_lock(
+        ["scaleX", "scaleY", "scaleZ"],
+        checked
+    )
+
+
+def lock_selection_visibility(checked):
+    """Lock or unlock visibility."""
+    _set_selected_attr_lock(
+        ["visibility"],
+        checked
+    )
 
 # ##################
 # UI Development
@@ -3329,20 +3376,9 @@ class CVToolkit(QtWidgets.QWidget):
 
         self.setWindowFlags(QtCore.Qt.Window)
 
-        # Robust pathing to handle Maya Script Editor memory vs normal loading
-        try:
-            self.widgetPath = os.path.dirname(
-                os.path.abspath(__file__)
-            )
-
-            if not self.widgetPath:
-                raise NameError
-
-        except (NameError, AttributeError):
-
-            self.widgetPath = (
-                r"C:\Users\melme\OneDrive - Rutgers University\Desktop\CVToolkit"
-            )
+        # Resolve all tool resources relative to this Python file.
+        # This keeps CV Toolkit portable across computers and user accounts.
+        self.widgetPath = os.path.dirname(os.path.abspath(__file__))
 
         self.iconsPath = os.path.join(
             self.widgetPath,
@@ -4035,7 +4071,6 @@ class CVToolkit(QtWidgets.QWidget):
             "btn_FourPointStar": "FourPointStar.png",
             "btn_target": "target.png",
             "btn_paw": "paw.png",
-            "btn_oval_rings": "oval_rings.png",
             "btn_visor": "visor.png",
             "btn_CVlogo": "CVtoolkitlogo.png",
         }
@@ -4133,5 +4168,3 @@ def openWindow():
     )
 
     CVToolkit.window.show()
-
-
