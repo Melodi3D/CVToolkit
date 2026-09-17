@@ -11,7 +11,7 @@ Autodesk Maya 2025 • Python • PySide6 • Qt Designer • Adobe Photoshop
 # Goals
 Creating and customizing rig controls in Maya can include many repetitive steps: creating curves, changing curve colors, assembling new materials  and recreating commonly used controls between projects.
 
-CV Toolkit was developed as a solution to alleviate the burden of manually maneuvering these tasks into a single artist friendly ui interface.
+CV Toolkit was developed as a solution to alleviate the burden of manually maneuvering these tasks into a single artist friendly UI interface.
 
 # Features:
 •  Landmark Creation with reusable user presets.
