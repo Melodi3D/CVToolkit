@@ -51,7 +51,7 @@ CV Toolkit was developed as a solution to alleviate the burden of manually maneu
 5. Run:
 
 ```python
-import CVToolkit.CVToolkit as cvt
+import CVToolkit as cvt
 cvt.openWindow()
 ```
 
