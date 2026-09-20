@@ -2842,31 +2842,6 @@ def curve_scale(scale_value=3.0):
     for curve in curves:
         cmds.scale(scale_value, scale_value, scale_value, curve + ".cv[*]", relative=True, objectCenterPivot=True)
 
-
-def mirror_curves():
-    """Duplicates and mirrors selected curve controls across world X"""
-    curves = _selected_curve_transforms()
-    if not curves:
-        cmds.warning("Select one or more curves to mirror")
-        return []
-
-    mirrored = []
-    cmds.undoInfo(openChunk=True, chunkName="Mirror Curves")
-    try:
-        for curve in curves:
-            duplicate = cmds.duplicate(curve, returnRootsOnly=True)[0]
-            group = cmds.group(duplicate, world=True)
-            cmds.setAttr(group + ".scaleX", -1)
-            cmds.parent(duplicate, world=True)
-            cmds.delete(group)
-            cmds.makeIdentity(duplicate, apply=True, translate=False, rotate=False, scale=True)
-            mirrored.append(duplicate)
-        cmds.select(mirrored, replace=True)
-        return mirrored
-    finally:
-        cmds.undoInfo(closeChunk=True)
-
-
 def _set_curve_channel_lock(channel, locked=True):
     curves = _selected_curve_transforms()
     if not curves:
@@ -3058,8 +3033,7 @@ def landmark_data_reconstruction(preset):
 # Misc Functions
 # ############
 def mirror_selection(plane="YZ", *args):
-    """Mirror selected joints, curves, or objects across YZ, XZ, or XY."""
-
+    """Flip selected objects across YZ, XZ, or XY plane."""
     selection = cmds.ls(selection=True)
 
     if not selection:
@@ -3067,65 +3041,36 @@ def mirror_selection(plane="YZ", *args):
         return
 
     axis_map = {
-        "YZ": "X",
-        "XZ": "Y",
-        "XY": "Z"
+        "YZ": 0,  # Flip X
+        "XZ": 1,  # Flip Y
+        "XY": 2   # Flip Z
     }
 
     plane = plane.upper()
 
     if plane not in axis_map:
-        cmds.warning("Mirror plane must be YZ, XZ, or XY.")
+        cmds.warning("Mirror plane must be YZ, XZ, or XY")
         return
 
-    axis = axis_map[plane]
+    axis_index = axis_map[plane]
 
     for obj in selection:
 
-        if cmds.nodeType(obj) == "joint":
-            mirror_joint(obj, axis)
-            continue
-
-        shapes = cmds.listRelatives(
+        position = cmds.xform(
             obj,
-            shapes=True,
-            noIntermediate=True,
-            fullPath=True
-        ) or []
-
-        if any(cmds.nodeType(shape) == "nurbsCurve" for shape in shapes):
-            mirror_curve(obj, axis)
-            continue
-
-        duplicate = cmds.duplicate(
-            obj,
-            renameChildren=True
-        )[0]
-
-        mirror_group = cmds.group(
-            empty=True,
-            world=True
+            query=True,
+            worldSpace=True,
+            translation=True
         )
 
-        cmds.parent(duplicate, mirror_group)
+        # Flip position on corresponding axis
+        position[axis_index] *= -1
 
-        # YZ = flip X
-        if plane == "YZ":
-            cmds.setAttr(mirror_group + ".scaleX", -1)
-
-        # XZ = flip Y
-        elif plane == "XZ":
-            cmds.setAttr(mirror_group + ".scaleY", -1)
-
-        # XY = flip Z
-        elif plane == "XY":
-            cmds.setAttr(mirror_group + ".scaleZ", -1)
-
-        # Preserve mirrored world transform
-        cmds.parent(duplicate, world=True)
-
-        # Delete temporary mirror group
-        cmds.delete(mirror_group)
+        cmds.xform(
+            obj,
+            worldSpace=True,
+            translation=position
+        )
 
 def snap_tool():
     """snaps objects to each other"""
@@ -3135,33 +3080,6 @@ def snap_tool():
         raise RuntimeError("Select two objects to snap")
 
     cmds.matchTransform(object_selection[0], object_selection[1])
-def mirror_across_x():
-    """Mirror selected objects across the X axis"""
-
-    selection = cmds.ls(selection=True)
-
-    for obj in selection:
-        mirrored_obj = cmds.duplicate(obj, renameChildren=True)[0]
-        cmds.scale(1, -1, -1, mirrored_obj, relative=True)
-
-
-def mirror_across_y():
-    """Mirrors selected objects across the Y axis"""
-    selection = cmds.ls(selection=True)
-
-    for obj in selection:
-        mirrored_obj = cmds.duplicate(obj, renameChildren=True)[0]
-        cmds.scale(-1, 1, -1, mirrored_obj, relative=True)
-
-
-def mirror_across_z():
-    """Mirrors selected objects across the Z axis."""
-
-    selection = cmds.ls(selection=True)
-
-    for obj in selection:
-        mirrored_obj = cmds.duplicate(obj, renameChildren=True)[0]
-        cmds.scale(-1, -1, 1, mirrored_obj, relative=True)
 
 def freeze_group():
     """Freeze transforms on the selected objects."""
@@ -3942,28 +3860,21 @@ class CVToolkit(QtWidgets.QWidget):
         if self.btn_visibility:
             self.btn_visibility.toggled.connect(lock_selection_visibility)
 
-        if self.btn_yz:
-            self.btn_yz.clicked.connect(
-                lambda checked=False: mirror_selection("YZ")
-            )
-
-        if self.btn_xz:
-            self.btn_xz.clicked.connect(
-                lambda checked=False: mirror_selection("XZ")
-            )
-
-        if self.btn_xy:
-            self.btn_xy.clicked.connect(
-                lambda checked=False: mirror_selection("XY")
-            )
         if self.scale_line:
             self.scale_line.returnPressed.connect(
                 lambda: scale_object(self)
             )
-        self.btn_axisx.clicked.connect(mirror_across_x)
-        self.btn_axisy.clicked.connect(mirror_across_y)
-        self.btn_axisz.clicked.connect(mirror_across_z)
+        self.btn_yz.clicked.connect(
+            lambda: mirror_selection("YZ")
+        )
 
+        self.btn_xz.clicked.connect(
+            lambda: mirror_selection("XZ")
+        )
+
+        self.btn_xy.clicked.connect(
+            lambda: mirror_selection("XY")
+        )
         if self.btn_select_controls:
             self.btn_select_controls.clicked.connect(
                 lambda: curve_selection()
