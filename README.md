@@ -7,7 +7,7 @@ CVToolKit is a Maya tool designed to expedite the creation of custom CV-based co
 
 # Tool Showcase
 <a href="https://vimeo.com/1228323327">
-  <img src="media/CVToolkittitle.png" alt="CV Toolkit Demo" width="700">
+  <img src="media/CVToolkitbanner.png" alt="CV Toolkit Demo" width="700">
 </a>
 
 # Software Used
