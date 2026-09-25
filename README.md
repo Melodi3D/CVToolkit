@@ -20,7 +20,9 @@ CV Toolkit was developed as a solution to alleviate the burden of manually maneu
 
 # Features:
 •  Landmark Creation with reusable user presets.
+🎥 Watch the Full High-Res Video Walkthrough on Vimeo
 ![CV Toolkit Demo](media/gif2.gif)
+
 
 •  Object-Specific landmark presets
 ![CV Toolkit Demo](media/gif1.gif)
