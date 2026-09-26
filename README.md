@@ -77,4 +77,6 @@ CVToolkit is still something I would like to continue developing. Some areas I w
 •  More workflow automation
 
 
+
+
 @ 2026 Melodi Clark
