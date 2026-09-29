@@ -79,4 +79,4 @@ CVToolkit is still something I would like to continue developing. Some areas I w
 
 
 
-@ 2026 Melodi Clark
+© 2026 Melodi Clark
