@@ -3,7 +3,7 @@
 </p>
 
 # CVToolkit
-CVToolKit is a Maya tool designed to assist in the creation of custom CV-based controls and modeling landmarks. This is also a expanded version of my original landmarkTool project.
+CVToolKit is an production-focused utility tool for Autodesk Maya designed to assist in character rigging and modeling workflows. By unifying custom curve creation, color customization, landmark placement, and control data extraction into a single, intuitive interface, it eliminates some of the repetitive manual steps typically required to build clean, animator-friendly rigs.
 
  [Watch the Full Tool Showcase on Vimeo](https://vimeo.com/1228323327)
 
